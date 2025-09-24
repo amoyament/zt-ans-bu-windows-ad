@@ -1,0 +1,39 @@
+################################################ UPDATE ME, PLEASE! ################################################
+## Just module names and tabs left
+---
+
+antora:
+  name: modules
+  dir: www
+  modules:
+    - name: module-01
+      label: "Setting up the foundation"
+      solveButton: false
+    - name: module-02
+      label: "Domains for the multidomain"
+      solveButton: false
+    - name: module-03
+      label: "Deploy the WebApps!"
+      solveButton: false
+
+tabs:
+  - name: aap
+    url: https://control-${guid}.${domain}/
+    external: false
+    modules:
+      - module-01
+      - module-02
+      - module-03
+  - name: Windows
+    url: https://windows-ironrdp-${guid}.${domain}/
+    external: false
+    modules:
+     - module-01
+     - module-02
+  - name: VS Code
+    url: https://vscode-${guid}.${domain}
+    external: false
+  - name: Gitea
+    url: https://podman-gitea-${guid}.${domain}/
+    modules:
+      - module-01
