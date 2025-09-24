@@ -1,5 +1,4 @@
-################################################ UPDATE ME, PLEASE! ################################################
-## Just module names and tabs left
+################################################ UPDATED! ################################################
 ---
 
 antora:
@@ -7,29 +6,22 @@ antora:
   dir: www
   modules:
     - name: module-01
-      label: "Setting up the foundation"
+      label: "Promoting our machine"
       solveButton: false
     - name: module-02
-      label: "Domains for the multidomain"
+      label: "OUs, Users, and Groups"
       solveButton: false
     - name: module-03
-      label: "Deploy the WebApps!"
+      label: "Just a dash of PowerShell"
       solveButton: false
 
 tabs:
   - name: aap
     url: https://control-${guid}.${domain}/
     external: false
-    modules:
-      - module-01
-      - module-02
-      - module-03
   - name: Windows
     url: https://windows-ironrdp-${guid}.${domain}/
     external: false
-    modules:
-     - module-01
-     - module-02
   - name: VS Code
     url: https://vscode-${guid}.${domain}
     external: false
