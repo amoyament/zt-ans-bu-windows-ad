@@ -181,7 +181,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
           setup:
 
         - name: Create oauth token
-          awx.awx.token:
+          ansible.controller.token:
             description: 'Instruqt lab'
             scope: "write"
             state: present
@@ -217,7 +217,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
           retries: 5
 
         - name: Retry getting auth token
-          awx.awx.token:
+          ansible.controller.token:
             description: 'Instruqt lab'
             scope: "write"
             state: present
@@ -286,7 +286,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
 
 # Controller objects
     - name: Add Organization
-      awx.awx.organization:
+      ansible.controller.organization:
         name: "{{ lab_organization }}"
         description: "ACME Corp Organization"
         state: present
@@ -297,7 +297,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
         - controller-org
   
     - name: Add Instruqt Windows EE
-      awx.awx.execution_environment:
+      ansible.controller.execution_environment:
         name: "{{ controller_ee }}"
         image: "quay.io/nmartins/windows_ee"
         pull: missing
@@ -310,7 +310,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
         - controller-ees
 
     - name: Create student admin user
-      awx.awx.user:
+      ansible.controller.user:
         superuser: true
         username: "{{ student_user }}"
         password: "{{ student_password }}"
@@ -323,7 +323,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
         - controller-users    
         
     - name: Create Inventory
-      awx.awx.inventory:
+      ansible.controller.inventory:
        name: "Servers"
        description: "Our Server environment"
        organization: "ACME"
@@ -331,14 +331,14 @@ cat <<EOF | tee /tmp/controller-setup.yml
        controller_config_file: "/tmp/controller.cfg"
 
     - name: Add host to inventory
-      awx.awx.host:
+      ansible.controller.host:
         name: "windows"
         inventory: "Servers" 
         state: present
         controller_config_file: "/tmp/controller.cfg"
 
     - name: Create group with extra vars
-      awx.awx.group:
+      ansible.controller.group:
         name: "Windows_Servers"
         inventory: "Servers"
         hosts:
@@ -353,7 +353,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
       register: inv_group
  
     - name: Add machine credential
-      awx.awx.credential:
+      ansible.controller.credential:
        name: "Windows Host"
        credential_type: Machine
        organization: Default
@@ -364,7 +364,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
        controller_config_file: "/tmp/controller.cfg"
 
     - name: Add project
-      awx.awx.project:
+      ansible.controller.project:
        name: "Active-Directory AAP"
        description: "Active Directory Management"
        organization: "Default"
@@ -377,7 +377,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
        controller_config_file: "/tmp/controller.cfg"
 
     # - name: Create IIS template
-    #   awx.awx.job_template:
+    #   ansible.controller.job_template:
     #    name: "Setup IIS"
     #    job_type: "run"
     #    organization: "Default"
@@ -444,7 +444,7 @@ EOF
 #   hosts: localhost
 #   connection: local
 #   collections:
-#     - ansible.controller
+#     - aansible.controller
 #   vars:
 #     SANDBOX_ID: "{{ lookup('env', '_SANDBOX_ID') | default('SANDBOX_ID_NOT_FOUND', true) }}"
 #     SN_HOST_VAR: "{{ '{{' }} SN_HOST {{ '}}' }}"
@@ -459,7 +459,7 @@ EOF
 # ###############CREDENTIALS###############
 
 #   - name: (EXECUTION) add App machine credential
-#     ansible.controller.credential:
+#     aansible.controller.credential:
 #       name: 'Application Nodes'
 #       organization: Default
 #       credential_type: Machine
@@ -472,7 +472,7 @@ EOF
 #         password: ansible123!
 
 #   - name: (EXECUTION) add Windows machine credential
-#     ansible.controller.credential:
+#     aansible.controller.credential:
 #       name: 'Windows DB Nodes'
 #       organization: Default
 #       credential_type: Machine
@@ -485,7 +485,7 @@ EOF
 #         password: Ansible123!
 
 #   - name: (EXECUTION) add Vault
-#     ansible.controller.credential:
+#     aansible.controller.credential:
 #       name: 'Windows Vault'
 #       organization: Default
 #       credential_type: Vault
@@ -497,7 +497,7 @@ EOF
 #         vault_password: ansible
 
 #   - name: (EXECUTION) add Controller Vault
-#     ansible.controller.credential:
+#     aansible.controller.credential:
 #       name: 'Controller Vault'
 #       organization: Default
 #       credential_type: Vault
@@ -512,7 +512,7 @@ EOF
 # ###############EE###############
 
 #   - name: Add Network EE
-#     ansible.controller.execution_environment:
+#     aansible.controller.execution_environment:
 #       name: "Edge_Network_ee"
 #       image: quay.io/acme_corp/network-ee
 #       controller_host: "https://localhost"
@@ -521,7 +521,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add Windows EE
-#     ansible.controller.execution_environment:
+#     aansible.controller.execution_environment:
 #       name: "Windows_ee"
 #       image: quay.io/nmartins/windows_ee_rs
 #       controller_host: "https://localhost"
@@ -530,7 +530,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add EE to the controller instance
-#     ansible.controller.execution_environment:
+#     aansible.controller.execution_environment:
 #       name: "RHEL EE"
 #       image: quay.io/acme_corp/rhel_90_ee_25:latest
 #       controller_host: "https://localhost"
@@ -539,7 +539,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add EE to the controller instance
-#     ansible.controller.execution_environment:
+#     aansible.controller.execution_environment:
 #       name: "Controller_ee"
 #       image: quay.io/nmartins/cac-25_ee
 #       controller_host: "https://localhost"
@@ -550,7 +550,7 @@ EOF
 # ###############INVENTORY###############
 
 #   - name: Add Video platform inventory
-#     ansible.controller.inventory:
+#     aansible.controller.inventory:
 #       name: "Video Platform Inventory"
 #       description: "Nodes used for streaming"
 #       organization: "Default"
@@ -561,7 +561,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add Streaming Server hosts
-#     ansible.controller.host:
+#     aansible.controller.host:
 #       name: "{{ item }}"
 #       description: "Application Nodes"
 #       inventory: "Video Platform Inventory"
@@ -576,7 +576,7 @@ EOF
 #       - DBServer01
 
 #   - name: Add Streaming server group
-#     ansible.controller.group:
+#     aansible.controller.group:
 #       name: "loadbalancer"
 #       description: "Application Nodes"
 #       inventory: "Video Platform Inventory"
@@ -592,7 +592,7 @@ EOF
 #   #   # Network
  
 #   - name: Add Edge Network Devices
-#     ansible.controller.inventory:
+#     aansible.controller.inventory:
 #       name: "Edge Network"
 #       description: "Network for delivery"
 #       organization: "Default"
@@ -603,7 +603,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add Cisco
-#     ansible.controller.host:
+#     aansible.controller.host:
 #       name: "cisco"
 #       description: "Edge Leaf"
 #       inventory: "Edge Network"
@@ -615,7 +615,7 @@ EOF
 #       validate_certs: false
       
 #   - name: Add CORE Network Group
-#     ansible.controller.group:
+#     aansible.controller.group:
 #       name: "Core"
 #       description: "EOS Network"
 #       inventory: "Edge Network"
@@ -633,7 +633,7 @@ EOF
 #       validate_certs: false
 
 #   - name:  Add Windows Inventory
-#     ansible.controller.inventory:
+#     aansible.controller.inventory:
 #      name: "Windows Servers"
 #      description: "Win Infrastructure"
 #      organization: "Default"
@@ -646,7 +646,7 @@ EOF
 #        ansible_winrm_transport: credssp
 
 #   - name: Add Windows Inventory Host
-#     ansible.controller.host:
+#     aansible.controller.host:
 #      name: "WindowsAD01"
 #      description: "Directory Servers"
 #      inventory: "Windows Servers"
@@ -660,7 +660,7 @@ EOF
 #        ansible_host: windows
 
 #   - name: Add Windows Inventory Host
-#     ansible.controller.host:
+#     aansible.controller.host:
 #      name: "DBServer01"
 #      description: "Database Server"
 #      inventory: "Windows Servers"
@@ -674,7 +674,7 @@ EOF
 #        ansible_host: dbserver
 
 #   - name: Create group with extra vars
-#     ansible.controller.group:
+#     aansible.controller.group:
 #       name: "windows"
 #       inventory: "Windows Servers"
 #       hosts:
@@ -692,7 +692,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Create group with extra vars
-#     ansible.controller.group:
+#     aansible.controller.group:
 #       name: "domain_controllers"
 #       inventory: "Windows Servers"
 #       hosts:
@@ -709,7 +709,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Create group with extra vars
-#     ansible.controller.group:
+#     aansible.controller.group:
 #       name: "database_servers"
 #       inventory: "Windows Servers"
 #       hosts:
@@ -729,7 +729,7 @@ EOF
 # ###############TEMPLATES###############
 
 #   - name: Add project roadshow
-#     ansible.controller.project:
+#     aansible.controller.project:
 #       name: "Roadshow"
 #       description: "Roadshow Content"
 #       organization: "Default"
@@ -742,7 +742,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add Windows Setup Template
-#     ansible.controller.job_template:
+#     aansible.controller.job_template:
 #       name: "Windows Domain Controller"
 #       job_type: "run"
 #       organization: "Default"
@@ -759,7 +759,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add Windows App Template
-#     ansible.controller.job_template:
+#     aansible.controller.job_template:
 #       name: "Windows Server Applications"
 #       job_type: "run"
 #       organization: "Default"
@@ -776,7 +776,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add Windows Setup Template
-#     ansible.controller.job_template:
+#     aansible.controller.job_template:
 #       name: "Windows Registry keys"
 #       job_type: "run"
 #       organization: "Default"
@@ -793,7 +793,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add Windows OU Template
-#     ansible.controller.job_template:
+#     aansible.controller.job_template:
 #       name: "Windows Users and OU"
 #       job_type: "run"
 #       organization: "Default"
@@ -833,7 +833,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add Windows Setup Template
-#     ansible.controller.job_template:
+#     aansible.controller.job_template:
 #       name: "Windows Join Domain"
 #       job_type: "run"
 #       organization: "Default"
@@ -851,7 +851,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add Node-Provision Setup Template
-#     ansible.controller.job_template:
+#     aansible.controller.job_template:
 #       name: "Deploy Node"
 #       job_type: "run"
 #       organization: "Default"
@@ -884,7 +884,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add Windows Application Template
-#     ansible.controller.job_template:
+#     aansible.controller.job_template:
 #       name: "Windows Deploy WebApp"
 #       job_type: "run"
 #       organization: "Default"
@@ -901,7 +901,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add RHEL Application Template
-#     ansible.controller.job_template:
+#     aansible.controller.job_template:
 #       name: "RHEL Deploy WebApp"
 #       job_type: "run"
 #       organization: "Default"
@@ -918,7 +918,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add RHEL LDAP Template
-#     ansible.controller.job_template:
+#     aansible.controller.job_template:
 #       name: "RHEL Join AD"
 #       job_type: "run"
 #       organization: "Default"
@@ -936,7 +936,7 @@ EOF
 #       validate_certs: false
 
 #   - name: Add HAproxy Setup Template
-#     ansible.controller.job_template:
+#     aansible.controller.job_template:
 #       name: "Configure Loadbalancer"
 #       job_type: "run"
 #       organization: "Default"
