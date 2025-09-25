@@ -12,32 +12,31 @@ echo "192.168.1.100 windows.lab windows" >> /etc/hosts
 
 # Install required Windows features for AD
 echo "Installing Active Directory Domain Services..."
-Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+powershell -Command "Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools"
 
 # Configure the domain controller
 echo "Configuring domain controller..."
-$SecurePassword = ConvertTo-SecureString "ansible123!" -AsPlainText -Force
-Install-ADDSForest -DomainName "lab.local" -DomainNetbiosName "LAB" -SafeModeAdministratorPassword $SecurePassword -Force
+powershell -Command "\$SecurePassword = ConvertTo-SecureString 'ansible123!' -AsPlainText -Force; Install-ADDSForest -DomainName 'lab.local' -DomainNetbiosName 'LAB' -SafeModeAdministratorPassword \$SecurePassword -Force"
 
 # Configure WinRM for Ansible
 echo "Configuring WinRM for Ansible..."
-winrm quickconfig -q
-winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
-winrm set winrm/config '@{MaxTimeoutms="1800000"}'
-winrm set winrm/config/service '@{AllowUnencrypted="true"}'
-winrm set winrm/config/service/auth '@{Basic="true"}'
+powershell -Command "winrm quickconfig -q"
+powershell -Command "winrm set winrm/config/winrs '@{MaxMemoryPerShellMB=\"512\"}'"
+powershell -Command "winrm set winrm/config '@{MaxTimeoutms=\"1800000\"}'"
+powershell -Command "winrm set winrm/config/service '@{AllowUnencrypted=\"true\"}'"
+powershell -Command "winrm set winrm/config/service/auth '@{Basic=\"true\"}'"
 
 # Create firewall rules for WinRM
-New-NetFirewallRule -DisplayName "WinRM-HTTP" -Direction Inbound -Protocol TCP -LocalPort 5985 -Action Allow
-New-NetFirewallRule -DisplayName "WinRM-HTTPS" -Direction Inbound -Protocol TCP -LocalPort 5986 -Action Allow
+powershell -Command "New-NetFirewallRule -DisplayName 'WinRM-HTTP' -Direction Inbound -Protocol TCP -LocalPort 5985 -Action Allow"
+powershell -Command "New-NetFirewallRule -DisplayName 'WinRM-HTTPS' -Direction Inbound -Protocol TCP -LocalPort 5986 -Action Allow"
 
 # Configure IIS for web services
 echo "Configuring IIS..."
-Install-WindowsFeature -Name Web-Server -IncludeManagementTools
-Install-WindowsFeature -Name Web-Mgmt-Console
+powershell -Command "Install-WindowsFeature -Name Web-Server -IncludeManagementTools"
+powershell -Command "Install-WindowsFeature -Name Web-Mgmt-Console"
 
 # Create a simple test page
-$html = @"
+powershell -Command "\$html = @'
 <!DOCTYPE html>
 <html>
 <head>
@@ -48,8 +47,6 @@ $html = @"
     <p>This is the Windows AD domain controller for the lab.</p>
 </body>
 </html>
-"@
-
-$html | Out-File -FilePath "C:\inetpub\wwwroot\index.html" -Encoding UTF8
+'@; \$html | Out-File -FilePath 'C:\inetpub\wwwroot\index.html' -Encoding UTF8"
 
 echo "Windows AD setup completed successfully!"

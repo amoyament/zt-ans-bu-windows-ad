@@ -20,7 +20,7 @@ echo "192.168.1.11 podman.lab podman" >> /etc/hosts
 tee /tmp/inventory << EOF
 
 [windowssrv]
-windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_winrm_server_cert_validation=ignore
+windows ansible_host=windows ansible_user=Administrator ansible_password=ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_winrm_server_cert_validation=ignore
 
 [all]
 podman
@@ -360,8 +360,8 @@ cat <<EOF | tee /tmp/controller-setup.yml
        credential_type: Machine
        organization: Default
        inputs:
-        username: instruqt
-        password: Passw0rd!
+        username: Administrator
+        password: ansible123!
        state: present
        controller_config_file: "/tmp/controller.cfg"
 
@@ -406,7 +406,7 @@ cat <<EOF | tee /tmp/domain_controller.yml
 
 ---
 - 
-  hosts: active-directory
+  hosts: windowssrv
   gather_facts: true
   collections:
    - ansible.windows
