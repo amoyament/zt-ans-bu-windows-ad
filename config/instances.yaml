@@ -174,7 +174,6 @@ virtualmachines:
       runcmd:
         - echo "PasswordAuthentication yes" > /etc/ssh/sshd_config.d/50-cloud-init.conf
         - systemctl reload sshd
-        tls_termination: Edge
 
   - name: "windows"
     image: "base-windows-ad-2022.qcow2"
