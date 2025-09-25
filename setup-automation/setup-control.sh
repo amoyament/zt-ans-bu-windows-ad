@@ -971,4 +971,4 @@ EOF
 # EOF
 
 
-ANSIBLE_COLLECTIONS_PATH=/root/.ansible/collections/ansible_collections/ ansible-playbook -i /tmp/inventory /tmp/setup.yml
+ANSIBLE_COLLECTIONS_PATH=/root/.ansible/collections/ansible_collections/ ansible-playbook -i /tmp/inventory /tmp/controller-setup.yml
