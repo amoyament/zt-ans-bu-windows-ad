@@ -102,7 +102,7 @@ tee /tmp/setup.yml << EOF
         url: http://podman:3000/api/v1/repos/migrate
         method: POST
         body_format: json
-        body: {"clone_addr": "{{ item.url }}", "repo_name": "{{ item.name }}"}
+        body: {"clone_addr": "https://github.com/nmartins0611/aap_and_activedirectory.git", "repo_name": "aap_activedirectory"}
         status_code: [201, 409]
         headers:
           Content-Type: "application/json"
@@ -110,42 +110,33 @@ tee /tmp/setup.yml << EOF
         password: learn_ansible
         force_basic_auth: yes
         validate_certs: no
-      loop:
-        - {name: 'eda-project', url: 'https://github.com/ansible-tmm/eda-project-basic.git'}
-        - {name: 'eda-alertmanager', url: 'https://github.com/ansible-tmm/eda-alertmanager.git'}
 
     - name: Set the default branch to aap25 for migrated repositories
       ansible.builtin.uri:
-        url: "http://podman:3000/api/v1/repos/student/{{ item.name }}"
+        url: "http://podman:3000/api/v1/repos/student/aap_activedirectory"
         method: PATCH
         body_format: json
         body:
-          default_branch: "aap25"
+          default_branch: "main"
         headers:
           Content-Type: "application/json"
         user: student
         password: learn_ansible
         force_basic_auth: yes
         validate_certs: no
-      loop:
-        - { name: 'eda-project' }
-        - { name: 'eda-alertmanager' }
       delegate_to: localhost
 
     - name: Clone the specific branch from the migrated repo
       ansible.builtin.git:
-        repo: "http://podman:3000/student/{{ item.item.name }}.git"
-        dest: "/tmp/{{ item.item.name }}"
-        version: "{{ item.branch | default('main') }}"
+        repo: "http://podman:3000/student/aap_activedirectory.git"
+        dest: "/tmp/aap_activedirectory"
+        version: "main"
         force: true
-      loop:
-        - {item: {name: 'eda-alertmanager'}, branch: 'aap25'}
-        - {item: {name: 'eda-project'}, branch: 'aap25'}
 
     - name: Start node_exporter and webhook services with podman-compose
       ansible.builtin.command:
         cmd: podman-compose up -d
-        chdir: "/tmp/eda-alertmanager/{{ item }}"
+        chdir: "/tmp/aap_activedirectory/{{ item }}"
       loop:
         - node_exporter
         # - webhook
@@ -157,7 +148,7 @@ tee /tmp/setup.yml << EOF
     - name: Start prometheus with podman-compose
       ansible.builtin.command: 
         cmd: podman-compose up -d
-        chdir: /tmp/eda-alertmanager/prometheus
+        chdir: /tmp/aap_activedirectory/prometheus
 EOF
 
 
