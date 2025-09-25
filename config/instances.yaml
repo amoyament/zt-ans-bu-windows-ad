@@ -1,9 +1,8 @@
-################################################ UPDATE ME, PLEASE! ################################################
 ---
 # Containers are under development
 containers:
   - name: gitea
-    image: gitea/gitea:1.16.8-rootless
+    image: quay.io/agonzalezrh/gitea:1.16.8-rootless
     ports:
       - name: gitea
         containerPort: 3000
