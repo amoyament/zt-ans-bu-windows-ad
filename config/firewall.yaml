@@ -1,6 +1,62 @@
 ---
 # By default egress traffic is not allowed, define below the ports allowed.
 ingress:
-- {}
+- ports:
+  - protocol: TCP
+    port: 443
+  - protocol: TCP
+    port: 8080
+  - protocol: TCP
+    port: 80
+  - protocol: TCP
+    port: 3000
+  - protocol: TCP
+    port: 22
+  - protocol: TCP
+    port: 5986
+  - protocol: TCP
+    port: 3389
+  # - protocol: TCP
+  #   port: 9090
+  # - protocol: TCP
+  #   port: 9093
+  # - protocol: TCP
+  #   port: 9100
+  # - protocol: TCP
+  #   port: 5050
+  # - protocol: TCP
+  #   port: 5000
+  # - protocol: TCP
+  #   port: 9092
+  # - protocol: TCP
+  #   port: 8084
 egress:
-- {}
+- ports:
+  - protocol: TCP
+    port: 443
+  - protocol: TCP
+    port: 8080
+  - protocol: TCP
+    port: 80
+  - protocol: TCP
+    port: 3000
+  - protocol: TCP
+    port: 22
+  - protocol: TCP
+    port: 5986
+  - protocol: TCP
+    port: 3389
+  # - protocol: TCP
+  #   port: 9090
+  # - protocol: TCP
+  #   port: 9093
+  # - protocol: TCP
+  #   port: 9100
+  # - protocol: TCP
+  #   port: 5050
+  # - protocol: TCP
+  #   port: 5000
+  # - protocol: TCP
+  #   port: 9092
+  # - protocol: TCP
+  #   port: 8084    

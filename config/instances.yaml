@@ -140,62 +140,29 @@ virtualmachines:
           fH5qke1XR5LFGpndX1GuSVBhdZq94x0aGXWTQCDNIPQ3QtrQ64PBF1vRFdJ6o/FI
           uEOWpQhGYHMC0A==
           -----END CERTIFICATE-----
-  - name: "node01"
-    image: "rhel-9.5"
-    memory: "2G"
+  - name: "vscode"
+    image: "devtools-ansible"
+    memory: "8G"
     cores: 2
-    image_size: "30Gi"
+    image_size: "20Gi"
+    disk_type: "scsi"
+    bootloader: "efi"
     tags:
       - key: "AnsibleGroup"
         value: "isolated"
     networks:
       - default
-      - secondary
-    userdata: |-
-      #cloud-config
-      user: rhel
-      password: ansible123!
-      chpasswd: { expire: False }  
-      runcmd:
-        - echo "PasswordAuthentication yes" > /etc/ssh/sshd_config.d/50-cloud-init.conf
-        - systemctl reload sshd
     services:
-      - name: node01-http
-        ports:
-          - port: 80
-            protocol: TCP
-            targetPort: 80
-            name: node01
-    routes:
-      - name: node01-web
-        host: node01
-        service: node01-http
-        targetPort: 80
-        tls: true
-        tls_termination: Edge
-        
-  - name: "haproxy"
-    image: "rhel-9.5"
-    memory: "2G"
-    cores: 2
-    image_size: "30Gi"
-    tags:
-      - key: "AnsibleGroup"
-        value: "isolated"
-    networks:
-      - default
-      - secondary
-    services:
-      - name: haproxy-http
+      - name: vscode-8080
         ports:
           - port: 8080
             protocol: TCP
             targetPort: 8080
-            name: haproxy
+            name: vscode
     routes:
-      - name: haproxy-web
-        host: haproxy
-        service: haproxy-http
+      - name: vscode-8080
+        host: vscode
+        service: vscode-8080
         targetPort: 8080
         tls: true
         tls_termination: Edge
@@ -207,6 +174,7 @@ virtualmachines:
       runcmd:
         - echo "PasswordAuthentication yes" > /etc/ssh/sshd_config.d/50-cloud-init.conf
         - systemctl reload sshd
+        tls_termination: Edge
 
   - name: "windows"
     image: "base-windows-ad-2022.qcow2"
@@ -243,46 +211,6 @@ virtualmachines:
     routes:
       - name: windows
         host: windows
-        service: iis
-        targetPort: 80
-        tls: true
-        tls_termination: Edge
-
-  - name: "dbserver"
-    image: "base-windows-srv-2019.qcow2" 
-    memory: "16G"
-    cores: 4
-    image_size: "65Gi"
-    tags:
-      - key: "AnsibleGroup"
-        value: "isolated"
-    interface_model: "e1000e"
-    networks:
-      - default
-      - secondary
-    services:
-      - name: dbserver
-        ports:
-          - port: 5986
-            protocol: TCP
-            targetPort: 5986
-            name: dbserver
-            
-      - name: dbserver-rdp
-        ports:
-          - port: 3389
-            protocol: TCP
-            targetPort: 3389
-            name: dbserver-rdp
-      - name: iis
-        ports:
-          - port: 80
-            protocol: TCP
-            targetPort: 80
-            name: iis
-    routes:
-      - name: dbserver
-        host: dbserver
         service: iis
         targetPort: 80
         tls: true
