@@ -20,9 +20,7 @@
       ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'BASTION_PASSWORD') }}"
       ansible_python_interpreter: /usr/libexec/platform-python
     loop:
-      - podman
       - vscode
-      - windows
 - name: Demo Playbook for the ansible-runner API
   hosts: all:!localhost
   gather_facts: false
@@ -30,8 +28,6 @@
     satellite_url: "{{ lookup('ansible.builtin.env', 'SATELLITE_URL') }}"
     satellite_org: "{{ lookup('ansible.builtin.env', 'SATELLITE_ORG') }}"
     satellite_activationkey: "{{ lookup('ansible.builtin.env', 'SATELLITE_ACTIVATIONKEY') }}"
-    guid: "{{ lookup('ansible.builtin.env', 'GUID') }}"
-    domain: "{{ lookup('ansible.builtin.env', 'DOMAIN') }}"
   tasks:
   - name: "waiting for the port tcp/22 to be open"
     ansible.builtin.wait_for_connection:
@@ -68,8 +64,6 @@
       SATELLITE_URL: "{{ satellite_url }}"
       SATELLITE_ORG: "{{ satellite_org }}"
       SATELLITE_ACTIVATIONKEY: "{{ satellite_activationkey }}"
-      GUID: "{{ guid }}"
-      DOMAIN: "{{ domain }}"
 
   - name: Output script result
     ansible.builtin.debug:
@@ -95,3 +89,4 @@
     when:
     - r_result is defined
     - r_result.rc != 0
+    
