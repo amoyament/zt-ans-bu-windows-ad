@@ -100,7 +100,7 @@ tee /tmp/setup.yml << EOF
         url: http://podman:3000/api/v1/repos/migrate
         method: POST
         body_format: json
-        body: {"clone_addr": "https://github.com/nmartins0611/aap_and_activedirectory.git", "repo_name": "aap_activedirectory"}
+        body: {"clone_addr": "https://github.com/nmartins0611/aap_and_activedirectory.git", "repo_name": "aap_and_activedirectory"}
         status_code: [201, 409]
         headers:
           Content-Type: "application/json"
