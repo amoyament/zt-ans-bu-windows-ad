@@ -36,7 +36,7 @@ tee /tmp/setup.yml << EOF
 ### Podman setup 
 ###
 - name: Setup podman and services
-  hosts: podman
+  hosts: localhost
   gather_facts: no
   #become: true
   tasks:
@@ -98,10 +98,10 @@ tee /tmp/setup.yml << EOF
 
     - name: Migrate github projects to gitea student user
       ansible.builtin.uri:
-        url: http://podman:3000/api/v1/repos/migrate
+        url: http://localhost:3000/api/v1/repos/migrate
         method: POST
         body_format: json
-        body: {"clone_addr": "https://github.com/nmartins0611/aap_and_activedirectory.git", "repo_name": "aap_and_activedirectory"}
+        body: {"clone_addr": "https://github.com/nmartins0611/aap_and_activedirectory.git", "repo_name": "aap_activedirectory"}
         status_code: [201, 409]
         headers:
           Content-Type: "application/json"
@@ -112,7 +112,7 @@ tee /tmp/setup.yml << EOF
 
     - name: Set the default branch to aap25 for migrated repositories
       ansible.builtin.uri:
-        url: "http://podman:3000/api/v1/repos/student/aap_activedirectory"
+        url: "http://localhost:3000/api/v1/repos/student/aap_activedirectory"
         method: PATCH
         body_format: json
         body:
@@ -127,7 +127,7 @@ tee /tmp/setup.yml << EOF
 
     - name: Clone the specific branch from the migrated repo
       ansible.builtin.git:
-        repo: "http://podman:3000/student/aap_activedirectory.git"
+        repo: "http://localhost:3000/student/aap_activedirectory.git"
         dest: "/tmp/aap_activedirectory"
         version: "main"
         force: true
