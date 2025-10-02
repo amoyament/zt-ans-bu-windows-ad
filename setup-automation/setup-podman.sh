@@ -35,7 +35,7 @@ tee /tmp/setup.yml << EOF
 ### Podman setup 
 ###
 - name: Setup podman and services
-  hosts: lolcalhost
+  hosts: localhost
   gather_facts: no
   #become: true
   tasks:
