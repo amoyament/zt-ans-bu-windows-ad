@@ -7,8 +7,6 @@ nmcli connection add type ethernet con-name eth1 ifname eth1 ipv4.addresses 192.
 nmcli connection up eth1
 echo "192.168.1.10 control.lab control aap control.ansible.workshop" >> /etc/hosts
 echo "192.168.1.11 podman.lab podman" >> /etc/hosts
-echo "192.168.1.12 rhel-1.lab rhel-1" >> /etc/hosts
-echo "192.168.1.13 rhel-2.lab rhel-2" >> /etc/hosts
 
 retry() {
     for i in {1..3}; do
