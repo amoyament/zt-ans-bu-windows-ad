@@ -25,6 +25,7 @@ retry "update-ca-trust"
 retry "rpm -Uhv https://${SATELLITE_URL}/pub/katello-ca-consumer-latest.noarch.rpm"
 retry "subscription-manager register --org=${SATELLITE_ORG} --activationkey=${SATELLITE_ACTIVATIONKEY}"
 
+
 echo "Registered and Ready"
 
 dnf install ansible-core -y
@@ -35,7 +36,7 @@ tee /tmp/setup.yml << EOF
 ### Podman setup 
 ###
 - name: Setup podman and services
-  hosts: localhost
+  hosts: podman
   gather_facts: no
   #become: true
   tasks:
