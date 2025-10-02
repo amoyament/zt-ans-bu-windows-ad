@@ -105,10 +105,7 @@ tee /tmp/setup.yml << EOF
     - name: Create gitea student user
       ansible.builtin.shell:
         cmd: podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email student@example.com
-
-    - name: Create gitea ansible user
-      ansible.builtin.shell:
-        cmd: podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username ansible --password learn_ansible --email ansible@example.com
+      ignore_errors: true
 
     - name: Migrate github projects to gitea student user
       ansible.builtin.uri:
