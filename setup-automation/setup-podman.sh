@@ -44,6 +44,8 @@ echo "Registered and Ready"
 
 dnf install ansible-core -y
 
+ansible-galaxy collection install community.general
+
 tee /tmp/setup.yml << EOF
 ---
 ###
@@ -108,13 +110,13 @@ tee /tmp/setup.yml << EOF
         content: "http://{{ student_user }}:{{ student_password }}@{{ 'localhost:3000' | urlencode }}"
 
     - name: Configure git username
-      ansible.builtin.git_config:
+      community.general.git_config:
         name: user.name
         scope: global
         value: "{{ ansible_user }}"
 
     - name: Configure git email address
-      ansible.builtin.git_config:
+      community.general.git_config:
         name: user.email
         scope: global
         value: "{{ ansible_user }}@local"
