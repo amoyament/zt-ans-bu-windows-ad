@@ -44,8 +44,6 @@ echo "Registered and Ready"
 
 dnf install ansible-core -y
 
-ansible-galaxy collection install community.general
-
 tee /tmp/setup.yml << EOF
 ---
 ###
@@ -69,8 +67,8 @@ tee /tmp/setup.yml << EOF
         - git
         - python3-pip
     #     - python3-dotenv
-    #     - tmux
-    #     - podman-compose
+        - tmux
+        - podman-compose
       become: true
 
     - name: Clone gitea podman-compose project
@@ -110,13 +108,13 @@ tee /tmp/setup.yml << EOF
         content: "http://{{ student_user }}:{{ student_password }}@{{ 'localhost:3000' | urlencode }}"
 
     - name: Configure git username
-      community.general.git_config:
+      ansible.builtin.git_config:
         name: user.name
         scope: global
         value: "{{ ansible_user }}"
 
     - name: Configure git email address
-      community.general.git_config:
+      ansible.builtin.git_config:
         name: user.email
         scope: global
         value: "{{ ansible_user }}@local"
