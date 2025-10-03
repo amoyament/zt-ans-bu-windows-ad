@@ -2,8 +2,8 @@
 # File sourced from zt-ans-bu-eda-controller
 
 #!/bin/bash
-nmcli connection add type ethernet con-name eth1 ifname eth1 ipv4.addresses 192.168.1.11/24 ipv4.method manual connection.autoconnect yes
-nmcli connection up eth1
+# nmcli connection add type ethernet con-name eth1 ifname eth1 ipv4.addresses 192.168.1.11/24 ipv4.method manual connection.autoconnect yes
+# nmcli connection up eth1
 curl -k  -L https://${SATELLITE_URL}/pub/katello-server-ca.crt -o /etc/pki/ca-trust/source/anchors/${SATELLITE_URL}.ca.crt
 update-ca-trust
 rpm -Uhv https://${SATELLITE_URL}/pub/katello-ca-consumer-latest.noarch.rpm || true
@@ -19,28 +19,6 @@ if [ ! -f /home/rhel/.ssh/id_rsa ]; then
 sudo -u rhel ssh-keygen -q -t rsa -b 4096 -C "rhel@$(hostname)" -f /home/rhel/.ssh/id_rsa -N ""
 fi
 sudo -u rhel chmod 600 /home/rhel/.ssh/id_rsa*
-# nmcli connection add type ethernet con-name eth1 ifname eth1 ipv4.addresses 192.168.1.11/24 ipv4.method manual connection.autoconnect yes
-# nmcli connection up eth1
-# # echo "192.168.1.10 control.lab control aap control.ansible.workshop" >> /etc/hosts
-# # echo "192.168.1.11 podman.lab podman" >> /etc/hosts
-
-# retry() {
-#     for i in {1..3}; do
-#         echo "Attempt $i: $2"
-#         if $1; then
-#             return 0
-#         fi
-#         [ $i -lt 3 ] && sleep 5
-#     done
-#     echo "Failed after 3 attempts: $2"
-#     exit 1
-# }
-
-# retry "curl -k -L https://${SATELLITE_URL}/pub/katello-server-ca.crt -o /etc/pki/ca-trust/source/anchors/${SATELLITE_URL}.ca.crt"
-# retry "update-ca-trust"
-# retry "rpm -Uhv https://${SATELLITE_URL}/pub/katello-ca-consumer-latest.noarch.rpm"
-# retry "subscription-manager register --org=${SATELLITE_ORG} --activationkey=${SATELLITE_ACTIVATIONKEY}"
-
 
 echo "Registered and Ready"
 
@@ -56,7 +34,7 @@ tee /tmp/setup.yml << EOF
 - name: Setup podman and services
   hosts: localhost
   gather_facts: no
-  # become: true
+  become: true
   vars:
     student_user: 'student'
     student_password: 'learn_ansible'
@@ -84,7 +62,7 @@ tee /tmp/setup.yml << EOF
         - tar
         - git
         - python3-pip
-    #     - python3-dotenv
+        - python3-dotenv
         - tmux
         - podman-compose
       become: true
