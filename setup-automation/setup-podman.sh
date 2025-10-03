@@ -54,11 +54,25 @@ tee /tmp/setup.yml << EOF
 - name: Setup podman and services
   hosts: localhost
   gather_facts: no
-  become: true
+  # become: true
   vars:
     student_user: 'student'
     student_password: 'learn_ansible'
   tasks:
+    - name: Install EPEL
+      ansible.builtin.package:
+        name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+        state: present
+        disable_gpg_check: true
+      become: true
+
+      ## Lab Fix
+    - name: Ensure crun is updated to the latest available version
+      ansible.builtin.dnf:
+        name: crun
+        state: latest
+      become: true
+
     - name: Install required packages
       ansible.builtin.package:
         name: "{{ item }}"
@@ -113,13 +127,13 @@ tee /tmp/setup.yml << EOF
       community.general.git_config:
         name: user.name
         scope: global
-        value: "{{ ansible_user }}"
+        value: "root"
 
     - name: Configure git email address
       community.general.git_config:
         name: user.email
         scope: global
-        value: "{{ ansible_user }}@local"
+        value: "root@local"
 
     - name: Grab the rsa
       ansible.builtin.set_fact:
