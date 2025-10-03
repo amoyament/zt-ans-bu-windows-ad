@@ -97,11 +97,14 @@ tee /tmp/setup.yml << EOF
         delay: 2
         timeout: 60
 
-    - name: Set Gitea ROOT_URL to https://gitea:3000
-      ansible.builtin.command: podman exec -u git gitea /usr/local/bin/gitea admin config set --section server --key ROOT_URL --value https://gitea:3000
-
-    - name: Set Gitea DOMAIN to gitea
-      ansible.builtin.command: podman exec -u git gitea /usr/local/bin/gitea admin config set --section server --key DOMAIN --value gitea
+    - name: Ensure Gitea server config (ROOT_URL, DOMAIN)
+      ansible.builtin.shell: >
+        podman exec -u 0 gitea sh -lc 'ini=/data/gitea/conf/app.ini; set -e;
+        mkdir -p /data/gitea/conf; touch "$ini";
+        grep -q "^\\[server\\]" "$ini" || printf "\n[server]\n" >> "$ini";
+        if grep -q "^ROOT_URL" "$ini"; then sed -i "s|^ROOT_URL.*|ROOT_URL = https://gitea:3000|" "$ini"; else printf "ROOT_URL = https://gitea:3000\n" >> "$ini"; fi;
+        if grep -q "^DOMAIN" "$ini"; then sed -i "s|^DOMAIN.*|DOMAIN = gitea|" "$ini"; else printf "DOMAIN = gitea\n" >> "$ini"; fi;
+        chown -R git:git /data/gitea'
 
     - name: Restart gitea to apply config
       ansible.builtin.command:
