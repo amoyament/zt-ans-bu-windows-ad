@@ -99,7 +99,7 @@ tee /tmp/setup.yml << EOF
         cmd: podman restart gitea
 
     - name: Create repo user
-      ansible.builtin.command: podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email student@example.com
+      ansible.builtin.command: podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email student@redhat.com
       become_user: git
       register: __output
       failed_when: __output.rc not in [ 0, 1 ]
@@ -115,13 +115,13 @@ tee /tmp/setup.yml << EOF
       community.general.git_config:
         name: user.name
         scope: global
-        value: "root"
+        value: "student"
 
     - name: Configure git email address
       community.general.git_config:
         name: user.email
         scope: global
-        value: "root@local"
+        value: "student@redhat.com"
 
     - name: Grab the rsa
       ansible.builtin.set_fact:
