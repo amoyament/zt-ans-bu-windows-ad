@@ -72,6 +72,14 @@ tee /tmp/setup.yml << EOF
         dest: /tmp/gitea-podman
         force: true
 
+    - name: Set Gitea env in compose (.env)
+      ansible.builtin.blockinfile:
+        path: /tmp/gitea-podman/.env
+        create: true
+        block: |
+          GITEA__server__ROOT_URL=https://gitea:3000
+          GITEA__server__DOMAIN=gitea
+
     - name: Allow user to linger
       ansible.builtin.command: 
         cmd: loginctl enable-linger rhel
@@ -85,18 +93,6 @@ tee /tmp/setup.yml << EOF
     - name: Wait for gitea to start
       ansible.builtin.pause:
         seconds: 15
-
-    - name: Set Gitea ROOT_URL to https://gitea:3000
-      ansible.builtin.shell: >
-        podman exec gitea sh -c "INI=/data/gitea/conf/app.ini; mkdir -p /data/gitea/conf; touch \"$INI\"; if grep -q '^ROOT_URL' \"$INI\"; then sed -i 's|^ROOT_URL.*|ROOT_URL = https://gitea:3000|' \"$INI\"; else printf '\n[server]\nROOT_URL = https://gitea:3000\n' >> \"$INI\"; fi"
-
-    - name: Set Gitea DOMAIN to gitea
-      ansible.builtin.shell: >
-        podman exec gitea sh -c "INI=/data/gitea/conf/app.ini; mkdir -p /data/gitea/conf; touch \"$INI\"; if grep -q '^DOMAIN' \"$INI\"; then sed -i 's|^DOMAIN.*|DOMAIN = gitea|' \"$INI\"; else printf '\n[server]\nDOMAIN = gitea\n' >> \"$INI\"; fi"
-
-    - name: Restart gitea
-      ansible.builtin.command:
-        cmd: podman restart gitea
 
     - name: Create repo user
       ansible.builtin.command: podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email student@redhat.com
