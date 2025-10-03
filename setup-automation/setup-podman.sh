@@ -90,9 +90,22 @@ tee /tmp/setup.yml << EOF
         cmd: podman-compose up -d
         chdir: /tmp/gitea-podman
 
-    - name: Wait for gitea to start
-      ansible.builtin.pause:
-        seconds: 15
+    - name: Wait for gitea to start listening
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: 3000
+        delay: 2
+        timeout: 60
+
+    - name: Set Gitea ROOT_URL to https://gitea:3000
+      ansible.builtin.command: podman exec -u git gitea /usr/local/bin/gitea admin config set --section server --key ROOT_URL --value https://gitea:3000
+
+    - name: Set Gitea DOMAIN to gitea
+      ansible.builtin.command: podman exec -u git gitea /usr/local/bin/gitea admin config set --section server --key DOMAIN --value gitea
+
+    - name: Restart gitea to apply config
+      ansible.builtin.command:
+        cmd: podman restart gitea
 
     - name: Create repo user
       ansible.builtin.command: podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email student@redhat.com
