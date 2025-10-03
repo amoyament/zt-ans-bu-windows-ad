@@ -155,10 +155,10 @@ tee /tmp/setup.yml << EOF
       loop:
         - {name: 'aap_activedirectory', url: 'https://github.com/nmartins0611/aap_and_activedirectory.git'}
 
-    # - name: Start prometheus with podman-compose
-    #   ansible.builtin.command: 
-    #     cmd: podman-compose up -d
-    #     chdir: /tmp/gitea-podman/prometheus
+    - name: Start prometheus with podman-compose
+      ansible.builtin.command: 
+        cmd: podman-compose up -d
+        chdir: /tmp/gitea-podman/
 
     # - name: Install EPEL
     #   ansible.builtin.package:
