@@ -88,18 +88,18 @@ tee /tmp/setup.yml << EOF
 
     - name: Set Gitea ROOT_URL to https://gitea:3000
       ansible.builtin.shell: >
-        podman exec gitea sh -lc "INI=/data/gitea/conf/app.ini; mkdir -p /data/gitea/conf; touch \"$INI\"; if grep -q '^ROOT_URL' \"$INI\"; then sed -i 's|^ROOT_URL.*|ROOT_URL = https://gitea:3000|' \"$INI\"; else printf '\n[server]\nROOT_URL = https://gitea:3000\n' >> \"$INI\"; fi"
+        podman exec gitea sh -c "INI=/data/gitea/conf/app.ini; mkdir -p /data/gitea/conf; touch \"$INI\"; if grep -q '^ROOT_URL' \"$INI\"; then sed -i 's|^ROOT_URL.*|ROOT_URL = https://gitea:3000|' \"$INI\"; else printf '\n[server]\nROOT_URL = https://gitea:3000\n' >> \"$INI\"; fi"
 
     - name: Set Gitea DOMAIN to gitea
       ansible.builtin.shell: >
-        podman exec gitea sh -lc "INI=/data/gitea/conf/app.ini; mkdir -p /data/gitea/conf; touch \"$INI\"; if grep -q '^DOMAIN' \"$INI\"; then sed -i 's|^DOMAIN.*|DOMAIN = gitea|' \"$INI\"; else printf '\n[server]\nDOMAIN = gitea\n' >> \"$INI\"; fi"
+        podman exec gitea sh -c "INI=/data/gitea/conf/app.ini; mkdir -p /data/gitea/conf; touch \"$INI\"; if grep -q '^DOMAIN' \"$INI\"; then sed -i 's|^DOMAIN.*|DOMAIN = gitea|' \"$INI\"; else printf '\n[server]\nDOMAIN = gitea\n' >> \"$INI\"; fi"
 
     - name: Restart gitea
       ansible.builtin.command:
         cmd: podman restart gitea
 
     - name: Create repo user
-      ansible.builtin.command: "podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email student@example.com"
+      ansible.builtin.command: podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email student@example.com
       become_user: git
       register: __output
       failed_when: __output.rc not in [ 0, 1 ]
