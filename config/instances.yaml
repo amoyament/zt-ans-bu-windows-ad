@@ -27,8 +27,8 @@ virtualmachines:
             targetPort: 3000
             name: gitea
     routes:
-      - name: podman
-        host: podman
+      - name: podman-gitea
+        host: podman-gitea
         service: podman
         targetPort: 3000
         tls: true
