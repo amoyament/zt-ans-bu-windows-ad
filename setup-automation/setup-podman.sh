@@ -44,6 +44,8 @@ echo "Registered and Ready"
 
 dnf install ansible-core -y
 
+ansible-galaxy collection install community.general
+
 tee /tmp/setup.yml << EOF
 ---
 ###
@@ -66,10 +68,30 @@ tee /tmp/setup.yml << EOF
         - tar
         - git
         - python3-pip
-        - python3-dotenv
+    #     - python3-dotenv
     #     - tmux
     #     - podman-compose
       become: true
+
+    - name: Clone gitea podman-compose project
+      ansible.builtin.git:
+        repo: https://github.com/cloin/gitea-podman.git
+        dest: /tmp/gitea-podman
+        force: true
+
+    - name: Allow user to linger
+      ansible.builtin.command: 
+        cmd: loginctl enable-linger rhel
+        chdir: /tmp/gitea-podman
+
+    - name: Start gitea
+      ansible.builtin.command: 
+        cmd: podman-compose up -d
+        chdir: /tmp/gitea-podman
+
+    - name: Wait for gitea to start
+      ansible.builtin.pause:
+        seconds: 15
 
     - name: Create repo users
       ansible.builtin.command: "{{ item }}"
@@ -78,7 +100,8 @@ tee /tmp/setup.yml << EOF
       failed_when: __output.rc not in [ 0, 1 ]
       changed_when: '"user already exists" not in __output.stdout'
       loop:
-        - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
+        - "podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email student@example.com"
+        # - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
 
     - name: Store repo credentials in git-creds file
       ansible.builtin.copy:
@@ -117,6 +140,11 @@ tee /tmp/setup.yml << EOF
         validate_certs: no
       loop:
         - {name: 'aap_activedirectory', url: 'https://github.com/nmartins0611/aap_and_activedirectory.git'}
+
+    - name: Start prometheus with podman-compose
+      ansible.builtin.command: 
+        cmd: podman-compose up -d
+        chdir: /tmp/aap_activedirectory/prometheus
 
     # - name: Install EPEL
     #   ansible.builtin.package:
