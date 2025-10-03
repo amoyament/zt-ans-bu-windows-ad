@@ -52,67 +52,62 @@ tee /tmp/setup.yml << EOF
 - name: Setup podman and services
   hosts: localhost
   gather_facts: no
-  #become: true
+  become: true
+  vars:
+    student_user: 'student'
+    student_password: 'learn_ansible'
   tasks:
-
-    - name: Install EPEL
-      ansible.builtin.package:
-        name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-        state: present
-        disable_gpg_check: true
-      become: true
-
-      ## Lab Fix
-    - name: Ensure crun is updated to the latest available version
-      ansible.builtin.dnf:
-        name: crun
-        state: latest
-      become: true
-
     - name: Install required packages
       ansible.builtin.package:
         name: "{{ item }}"
         state: present
       loop:
+        - subversion
+        - tar
         - git
-        - tmux
         - python3-pip
-        - podman-compose
         - python3-dotenv
+    #     - tmux
+    #     - podman-compose
       become: true
 
+    - name: Create repo users
+      ansible.builtin.command: "{{ item }}"
+      become_user: git
+      register: __output
+      failed_when: __output.rc not in [ 0, 1 ]
+      changed_when: '"user already exists" not in __output.stdout'
+      loop:
+        - "/usr/local/bin/gitea admin user create --admin --username {{ student_user }} --password {{ student_password }} --must-change-password=false --email {{ student_user }}@localhost"
 
-    - name: Clone gitea podman-compose project
-      ansible.builtin.git:
-        repo: https://github.com/cloin/gitea-podman.git
-        dest: /tmp/gitea-podman
-        force: true
+    - name: Store repo credentials in git-creds file
+      ansible.builtin.copy:
+        dest: /tmp/git-creds
+        mode: 0644
+        content: "http://{{ student_user }}:{{ student_password }}@{{ 'localhost:3000' | urlencode }}"
 
-    - name: Allow user to linger
-      ansible.builtin.command: 
-        cmd: loginctl enable-linger rhel
-        chdir: /tmp/gitea-podman
+    - name: Configure git username
+      community.general.git_config:
+        name: user.name
+        scope: global
+        value: "{{ ansible_user }}"
 
-    - name: Start gitea
-      ansible.builtin.command: 
-        cmd: podman-compose up -d
-        chdir: /tmp/gitea-podman
+    - name: Configure git email address
+      community.general.git_config:
+        name: user.email
+        scope: global
+        value: "{{ ansible_user }}@local"
 
-    - name: Wait for gitea to start
-      ansible.builtin.pause:
-        seconds: 15
-
-    - name: Create gitea student user
-      ansible.builtin.shell:
-        cmd: podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email student@example.com
-      ignore_errors: true
+    - name: Grab the rsa
+      ansible.builtin.set_fact:
+        controller_ssh: "{{ lookup('file', '/home/rhel/.ssh/id_rsa.pub') }}"
 
     - name: Migrate github projects to gitea student user
       ansible.builtin.uri:
         url: http://localhost:3000/api/v1/repos/migrate
         method: POST
         body_format: json
-        body: {"clone_addr": "https://github.com/nmartins0611/aap_and_activedirectory.git", "repo_name": "aap_activedirectory"}
+        body: {"clone_addr": "{{ item.url }}", "repo_name": "{{ item.name }}"}
         status_code: [201, 409]
         headers:
           Content-Type: "application/json"
@@ -120,45 +115,113 @@ tee /tmp/setup.yml << EOF
         password: learn_ansible
         force_basic_auth: yes
         validate_certs: no
-
-    - name: Set the default branch to aap25 for migrated repositories
-      ansible.builtin.uri:
-        url: "http://localhost:3000/api/v1/repos/student/aap_activedirectory"
-        method: PATCH
-        body_format: json
-        body:
-          default_branch: "main"
-        headers:
-          Content-Type: "application/json"
-        user: student
-        password: learn_ansible
-        force_basic_auth: yes
-        validate_certs: no
-      delegate_to: localhost
-
-    - name: Clone the specific branch from the migrated repo
-      ansible.builtin.git:
-        repo: "http://localhost:3000/student/aap_activedirectory.git"
-        dest: "/tmp/aap_activedirectory"
-        version: "main"
-        force: true
-
-    - name: Start node_exporter and webhook services with podman-compose
-      ansible.builtin.command:
-        cmd: podman-compose up -d
-        chdir: "/tmp/aap_activedirectory/{{ item }}"
       loop:
-        - node_exporter
-        # - webhook
+        - {name: 'aap_activedirectory', url: 'https://github.com/nmartins0611/aap_and_activedirectory.git'}
 
-    # - name: Wait for services to start
+    # - name: Install EPEL
+    #   ansible.builtin.package:
+    #     name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+    #     state: present
+    #     disable_gpg_check: true
+    #   become: true
+
+    #   ## Lab Fix
+    # - name: Ensure crun is updated to the latest available version
+    #   ansible.builtin.dnf:
+    #     name: crun
+    #     state: latest
+    #   become: true
+
+    # - name: Install required packages
+    #   ansible.builtin.package:
+    #     name: "{{ item }}"
+    #     state: present
+    #   loop:
+    #     - git
+    #     - tmux
+    #     - python3-pip
+    #     - podman-compose
+    #     - python3-dotenv
+    #   become: true
+
+
+    # - name: Clone gitea podman-compose project
+    #   ansible.builtin.git:
+    #     repo: https://github.com/cloin/gitea-podman.git
+    #     dest: /tmp/gitea-podman
+    #     force: true
+
+    # - name: Allow user to linger
+    #   ansible.builtin.command: 
+    #     cmd: loginctl enable-linger rhel
+    #     chdir: /tmp/gitea-podman
+
+    # - name: Start gitea
+    #   ansible.builtin.command: 
+    #     cmd: podman-compose up -d
+    #     chdir: /tmp/gitea-podman
+
+    # - name: Wait for gitea to start
     #   ansible.builtin.pause:
     #     seconds: 15
 
-    - name: Start prometheus with podman-compose
-      ansible.builtin.command: 
-        cmd: podman-compose up -d
-        chdir: /tmp/aap_activedirectory/prometheus
+    # - name: Create gitea student user
+    #   ansible.builtin.shell:
+    #     cmd: podman exec -u git gitea /usr/local/bin/gitea admin user create --admin --username student --password learn_ansible --email student@example.com
+    #   ignore_errors: true
+
+    # - name: Migrate github projects to gitea student user
+    #   ansible.builtin.uri:
+    #     url: http://localhost:3000/api/v1/repos/migrate
+    #     method: POST
+    #     body_format: json
+    #     body: {"clone_addr": "https://github.com/nmartins0611/aap_and_activedirectory.git", "repo_name": "aap_activedirectory"}
+    #     status_code: [201, 409]
+    #     headers:
+    #       Content-Type: "application/json"
+    #     user: student
+    #     password: learn_ansible
+    #     force_basic_auth: yes
+    #     validate_certs: no
+
+    # - name: Set the default branch to aap25 for migrated repositories
+    #   ansible.builtin.uri:
+    #     url: "http://localhost:3000/api/v1/repos/student/aap_activedirectory"
+    #     method: PATCH
+    #     body_format: json
+    #     body:
+    #       default_branch: "main"
+    #     headers:
+    #       Content-Type: "application/json"
+    #     user: student
+    #     password: learn_ansible
+    #     force_basic_auth: yes
+    #     validate_certs: no
+    #   delegate_to: localhost
+
+    # - name: Clone the specific branch from the migrated repo
+    #   ansible.builtin.git:
+    #     repo: "http://localhost:3000/student/aap_activedirectory.git"
+    #     dest: "/tmp/aap_activedirectory"
+    #     version: "main"
+    #     force: true
+
+    # - name: Start node_exporter and webhook services with podman-compose
+    #   ansible.builtin.command:
+    #     cmd: podman-compose up -d
+    #     chdir: "/tmp/aap_activedirectory/{{ item }}"
+    #   loop:
+    #     - node_exporter
+    #     # - webhook
+
+    # # - name: Wait for services to start
+    # #   ansible.builtin.pause:
+    # #     seconds: 15
+
+    # - name: Start prometheus with podman-compose
+    #   ansible.builtin.command: 
+    #     cmd: podman-compose up -d
+    #     chdir: /tmp/aap_activedirectory/prometheus
 EOF
 
 
