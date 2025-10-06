@@ -6,7 +6,7 @@ fi
 nmcli connection add type ethernet con-name enp2s0 ifname enp2s0 ipv4.addresses 192.168.1.10/24 ipv4.method manual connection.autoconnect yes
 nmcli connection up enp2s0
 echo "192.168.1.10 control.lab control" >> /etc/hosts
-echo "192.168.1.11 podman.lab podman" >> /etc/hosts
+# echo "192.168.1.11 podman.lab podman" >> /etc/hosts
 
 
 
@@ -57,6 +57,9 @@ lab_organization: ACME
 
 EOF
 
+git config --global user.email "student@redhat.com"
+git config --global user.name "student"
+
 # Gitea setup playbook 
 cat <<EOF | tee /tmp/git-setup.yml
 ---
@@ -89,24 +92,12 @@ cat <<EOF | tee /tmp/git-setup.yml
         body_format: json
         body:
           clone_addr: "{{ source_repo_url }}"
-          repo_name: aap_active_directory  # <-- CORRECTED REPO NAME
+          repo_name: aap_active_directory
           private: false
         force_basic_auth: true
         url_password: "{{ student_password }}"
         url_username: "{{ student_user }}"
         status_code: [201, 409] # 201 = Created, 409 = Already exists
-
-    - name: Configure git to use main repo by default
-      community.general.git_config:
-        name: init.defaultBranch
-        scope: global
-        value: main
-
-    - name: Configure git to store credentials
-      community.general.git_config:
-        name: credential.helper
-        scope: global
-        value: store --file /tmp/git-creds
 
     - name: Store repo credentials in git-creds file
       ansible.builtin.copy:
@@ -114,17 +105,14 @@ cat <<EOF | tee /tmp/git-setup.yml
         mode: 0644
         content: "http://{{ student_user }}:{{ student_password }}@gitea:3000"
 
-    - name: Configure git username
-      community.general.git_config:
-        name: user.name
-        scope: global
-        value: "{{ student_user }}"
-
-    - name: Configure git email address
-      community.general.git_config:
-        name: user.email
-        scope: global
-        value: "{{ student_user }}@local"
+    - name: Configure global git settings using shell commands
+      ansible.builtin.command: "{{ item }}"
+      loop:
+        - git config --global init.defaultBranch main
+        - git config --global credential.helper 'store --file /tmp/git-creds'
+        - git config --global --add safe.directory /tmp/workshop_project
+        - git config --global user.name "{{ student_user }}"
+        - git config --global user.email "{{ student_user }}@local"
 EOF
 
 # Execute the setup playbooks
