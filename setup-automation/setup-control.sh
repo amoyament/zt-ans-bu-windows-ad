@@ -57,19 +57,74 @@ lab_organization: ACME
 
 EOF
 
-# Set up podman (gitea)
-tee /tmp/test.yml << EOF
+# Gitea setup playbook 
+cat <<EOF | tee /tmp/git-setup.yml
 ---
-- name: Setup podman and services
-  hosts: podman
-  gather_facts: true
+# Gitea config
+- name: Configure Git and Gitea repository
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  tags:
+    - gitea-config
+  vars:
+    source_repo_url: "https://github.com/nmartins0611/aap_and_activedirectory.git"
+    student_password: 'learn_ansible'
+    student_user: 'student'
   tasks:
+    - name: Wait for Gitea to be ready
+      ansible.builtin.uri:
+        url: http://gitea:3000/api/v1/version
+        method: GET
+        status_code: 200
+      register: gitea_ready
+      until: gitea_ready.status == 200
+      delay: 5
+      retries: 12
 
-  - name: put password in /tmp
-    ansible.builtin.command:
-      cmd: echo "task {{ lookup('ansible.builtin.env', 'admin_password') }}" >> /tmp/passwd
+    - name: Migrate source repository to Gitea
+      ansible.builtin.uri:
+        url: http://gitea:3000/api/v1/repos/migrate
+        method: POST
+        body_format: json
+        body:
+          clone_addr: "{{ source_repo_url }}"
+          repo_name: aap_active_directory  # <-- CORRECTED REPO NAME
+          private: false
+        force_basic_auth: true
+        url_password: "{{ student_password }}"
+        url_username: "{{ student_user }}"
+        status_code: [201, 409] # 201 = Created, 409 = Already exists
 
-...
+    - name: Configure git to use main repo by default
+      community.general.git_config:
+        name: init.defaultBranch
+        scope: global
+        value: main
+
+    - name: Configure git to store credentials
+      community.general.git_config:
+        name: credential.helper
+        scope: global
+        value: store --file /tmp/git-creds
+
+    - name: Store repo credentials in git-creds file
+      ansible.builtin.copy:
+        dest: /tmp/git-creds
+        mode: 0644
+        content: "http://{{ student_user }}:{{ student_password }}@gitea:3000"
+
+    - name: Configure git username
+      community.general.git_config:
+        name: user.name
+        scope: global
+        value: "{{ student_user }}"
+
+    - name: Configure git email address
+      community.general.git_config:
+        name: user.email
+        scope: global
+        value: "{{ student_user }}@local"
 EOF
 
 ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -i /tmp/inventory /tmp/test.yml
@@ -370,7 +425,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
        name: "Active-Directory AAP"
        description: "Active Directory Management"
        organization: "Default"
-       scm_url: http://gitea:3000/student/aap_activedirectory.git
+       scm_url: http://gitea:3000/student/aap_active_directory.git
        scm_type: "git"
        scm_branch: "main"
        scm_clean: true
