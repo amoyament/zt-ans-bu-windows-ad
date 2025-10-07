@@ -28,6 +28,7 @@ windows ansible_host=windows ansible_user=Administrator ansible_password=ansible
 [all]
 # podman
 windows
+# controller
 
 [all:vars]
 ansible_user = rhel
@@ -1029,7 +1030,4 @@ EOF
 # EOF
 
 
-# ANSIBLE_COLLECTIONS_PATH=/root/.ansible/collections/ansible_collections/ ansible-playbook -i /tmp/inventory /tmp/controller-setup.yml
-# Execute the setup playbooks
-echo "=== Running Git/Gitea Setup ==="
-ansible-playbook /tmp/controller-setup.yml -e @/tmp/track-vars.yml -i /tmp/inventory.ini -v
+ANSIBLE_COLLECTIONS_PATH=/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/controller-setup.yml
