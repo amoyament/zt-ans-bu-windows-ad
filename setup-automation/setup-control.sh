@@ -22,9 +22,9 @@ tee /tmp/inventory << EOF
 [windowssrv]
 windows ansible_host=windows ansible_user=Administrator ansible_password=ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_winrm_server_cert_validation=ignore
 
-[all]
-podman
-windowssrv
+# [all]
+# podman
+# windowssrv
 
 [all:vars]
 ansible_user = rhel
