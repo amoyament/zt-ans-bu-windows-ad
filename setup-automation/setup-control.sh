@@ -34,8 +34,6 @@ ansible_user = rhel
 ansible_password = ansible123!
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ansible_python_interpreter=/usr/bin/python3
-controller_admin_user: admin
-controller_admin_password: "ansible123!"
 
 EOF
 # sudo chown rhel:rhel /tmp/inventory
@@ -1031,4 +1029,7 @@ EOF
 # EOF
 
 
-ANSIBLE_COLLECTIONS_PATH=/root/.ansible/collections/ansible_collections/ ansible-playbook -i /tmp/inventory /tmp/controller-setup.yml
+# ANSIBLE_COLLECTIONS_PATH=/root/.ansible/collections/ansible_collections/ ansible-playbook -i /tmp/inventory /tmp/controller-setup.yml
+# Execute the setup playbooks
+echo "=== Running Git/Gitea Setup ==="
+ansible-playbook /tmp/controller-setup.yml -e @/tmp/track-vars.yml -i /tmp/inventory.ini -v
