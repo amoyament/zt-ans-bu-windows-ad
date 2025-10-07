@@ -123,7 +123,7 @@ EOF
 # echo "=== Running Git/Gitea Setup ==="
 # ansible-playbook /tmp/git-setup.yml -e @/tmp/track-vars.yml -i /tmp/inventory.ini -v
 
-ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ -e @/tmp/track-vars.yml ansible-playbook -i /tmp/inventory /tmp/test.yml
+ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/test.yml
 # TEST COMPLETE __ UNCOMMENT BELOW 
 
 # SET UP WINDOWS
