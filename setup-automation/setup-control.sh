@@ -34,6 +34,8 @@ ansible_user = rhel
 ansible_password = ansible123!
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ansible_python_interpreter=/usr/bin/python3
+controller_admin_user: admin
+controller_admin_password: "ansible123!"
 
 EOF
 # sudo chown rhel:rhel /tmp/inventory
