@@ -171,15 +171,14 @@ virtualmachines:
   - name: "windows"
     image: "base-windows-ad-2022.qcow2"
     memory: "32G"
-    cores: 32
-    image_size: "65Gi"
+    cores: 4
+    image_size: "60Gi"
     tags:
       - key: "AnsibleGroup"
         value: "isolated"
     interface_model: "e1000e"
     networks:
       - default
-      - secondary
     services:
       - name: windows
         ports:
@@ -206,4 +205,3 @@ virtualmachines:
         service: iis
         targetPort: 80
         tls: true
-        tls_termination: Edge
