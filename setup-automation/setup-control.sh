@@ -19,6 +19,9 @@ echo "192.168.1.10 control.lab control" >> /etc/hosts
 # Create an inventory file for this environment
 tee /tmp/inventory << EOF
 
+[ctrlnodes]
+controller.acme.example.com ansible_host=controller ansible_user=rhel ansible_connection=local
+
 [windowssrv]
 windows ansible_host=windows ansible_user=Administrator ansible_password=ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_winrm_server_cert_validation=ignore
 
@@ -119,8 +122,9 @@ EOF
 echo "=== Running Git/Gitea Setup ==="
 ansible-playbook /tmp/git-setup.yml -e @/tmp/track-vars.yml -i /tmp/inventory.ini -v
 
-ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -i /tmp/inventory /tmp/test.yml
+# ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -i /tmp/inventory /tmp/test.yml
 # TEST COMPLETE __ UNCOMMENT BELOW 
+
 # SET UP WINDOWS
 cat <<EOF | tee /tmp/domain.yml
 
@@ -213,6 +217,11 @@ cat <<EOF | tee /tmp/domain.yml
       when: server_updated.reboot_required
 
 EOF
+
+# # Execute the setup playbooks
+# echo "=== Running Windows Servers Setup ==="
+# ansible-playbook /tmp/git-setup.yml -e @/tmp/track-vars.yml -i /tmp/inventory.ini -v
+
 
 ############################ CONTROLLER CONFIG
 
