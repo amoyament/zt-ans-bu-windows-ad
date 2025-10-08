@@ -121,7 +121,79 @@ EOF
 ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/git-setup.yml
 # TEST COMPLETE __ UNCOMMENT BELOW 
 
-# SET UP WINDOWS
+# SET UP WINDOWS (migrated from setup-windows.sh)
+echo "=== Preparing Windows configuration ==="
+ansible-galaxy collection install ansible.windows microsoft.ad || true
+
+cat <<EOF | tee /tmp/windows-setup.yml
+---
+- name: Configure Windows VM (setup-windows.sh migrated)
+  hosts: windowssrv
+  gather_facts: false
+  tasks:
+    - name: Install AD DS
+      ansible.windows.win_feature:
+        name: AD-Domain-Services
+        include_management_tools: true
+        state: present
+
+    - name: Promote to domain controller if not already
+      ansible.windows.win_shell: |
+        try {
+          $null = Get-Service NTDS -ErrorAction Stop
+          Write-Output 'NTDS service found; skipping forest creation'
+        } catch {
+          $SecurePassword = ConvertTo-SecureString 'ansible123!' -AsPlainText -Force
+          Install-ADDSForest -DomainName 'lab.local' -DomainNetbiosName 'LAB' -SafeModeAdministratorPassword $SecurePassword -Force
+        }
+      args:
+        executable: PowerShell
+
+    - name: Configure WinRM
+      ansible.windows.win_shell: |
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+      args:
+        executable: PowerShell
+
+    - name: Open firewall for WinRM
+      ansible.windows.win_shell: |
+        New-NetFirewallRule -DisplayName 'WinRM-HTTP' -Direction Inbound -Protocol TCP -LocalPort 5985 -Action Allow
+        New-NetFirewallRule -DisplayName 'WinRM-HTTPS' -Direction Inbound -Protocol TCP -LocalPort 5986 -Action Allow
+      args:
+        executable: PowerShell
+
+    - name: Install IIS web server and management console
+      ansible.windows.win_feature:
+        name:
+          - Web-Server
+          - Web-Mgmt-Console
+        state: present
+        include_management_tools: true
+
+    - name: Create default IIS landing page
+      ansible.windows.win_copy:
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Windows AD Lab</title>
+          </head>
+          <body>
+              <h1>Windows AD Domain Controller</h1>
+              <p>This is the Windows AD domain controller for the lab.</p>
+          </body>
+          </html>
+        dest: C:\\inetpub\\wwwroot\\index.html
+EOF
+
+echo "=== Running Windows configuration ==="
+ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/windows-setup.yml
+
+# (legacy domain.yml kept for reference)
 cat <<EOF | tee /tmp/domain.yml
 
 ---
