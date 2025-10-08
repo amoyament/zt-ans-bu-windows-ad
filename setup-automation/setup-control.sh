@@ -23,7 +23,7 @@ tee /tmp/inventory << EOF
 controller.acme.example.com ansible_host=controller ansible_user=rhel ansible_connection=local
 
 [windowssrv]
-windows ansible_host=windows ansible_user=Administrator ansible_password=ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=ntlm ansible_winrm_server_cert_validation=ignore
+windows ansible_host=windows ansible_user=Administrator ansible_password=ansible123! ansible_connection=winrm ansible_port=5985 ansible_winrm_scheme=http ansible_winrm_transport=ntlm ansible_winrm_server_cert_validation=ignore
 
 [all:vars]
 ansible_user = rhel
@@ -190,7 +190,7 @@ cat <<EOF | tee /tmp/windows-setup.yml
         dest: C:\\inetpub\\wwwroot\\index.html
 EOF
 
-echo "=== Running Windows configuration ==="
+# echo "=== Running Windows configuration ==="
 # ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/windows-setup.yml
 
 # (legacy domain.yml kept for reference)
@@ -1096,5 +1096,5 @@ EOF
 
 # EOF
 
-
+## TEST 
 # ANSIBLE_COLLECTIONS_PATH=/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/controller-setup.yml
