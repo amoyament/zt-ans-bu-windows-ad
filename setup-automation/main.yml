@@ -27,7 +27,8 @@
       ansible.builtin.add_host:
         name: windows
         ansible_connection: winrm
-        ansible_port: 5986
+        ansible_port: 5985
+        ansible_winrm_scheme: http
         ansible_winrm_server_cert_validation: ignore
         ansible_winrm_transport: ntlm
         ansible_user: Administrator
@@ -47,11 +48,11 @@
       ansible.builtin.wait_for_connection:
       when: inventory_hostname != 'windows'
 
-    - name: "Wait for WinRM on tcp/5986 (Windows)"
+    - name: "Wait for WinRM on tcp/5985 (Windows)"
       when: inventory_hostname == 'windows'
       ansible.builtin.wait_for:
         host: "{{ ansible_host | default(inventory_hostname) }}"
-        port: 5986
+        port: 5985
         delay: 1
         timeout: 180
       delegate_to: localhost
