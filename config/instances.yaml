@@ -182,9 +182,9 @@ virtualmachines:
     services:
       - name: windows
         ports:
-          - port: 5986
+          - port: 5985
             protocol: TCP
-            targetPort: 5986
+            targetPort: 5985
             name: windows
             
       - name: windows-rdp
