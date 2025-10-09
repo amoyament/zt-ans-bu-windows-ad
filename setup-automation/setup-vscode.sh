@@ -47,4 +47,11 @@ GALAXY_BIN="/usr/bin/ansible-galaxy"
 
 # Create collections dir and install Windows collections for rhel user
 sudo -u rhel mkdir -p /home/rhel/.ansible/collections
-sudo -u rhel "$GALAXY_BIN" collection install -p /home/rhel/.ansible/collections ansible.windows community.windows || true
+sudo -u rhel "$GALAXY_BIN" collection install -p /home/rhel/.ansible/collections ansible.windows community.windows microsoft.ad ansible.controller community.general || true
+
+# # Ensure ansible can always find user-installed collections when linting
+# tee /home/rhel/.ansible.cfg << EOF
+# [defaults]
+# collections_paths = /home/rhel/.ansible/collections:/usr/share/ansible/collections
+# EOF
+# chown rhel:rhel /home/rhel/.ansible.cfg || true
