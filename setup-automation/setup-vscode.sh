@@ -52,53 +52,55 @@ sudo -u rhel "$GALAXY_BIN" collection install -p /home/rhel/.ansible/collections
 # Configure code-server user settings
 git config --global user.email "student@redhat.com"
 git config --global user.name "student"
-su - $USER -c 'cat >/home/rhel/.local/share/code-server/User/settings.json <<EOL
+
+# Configure code-server user settings
+su - $USER -c "cat >'/home/rhel/.local/share/code-server/User/settings.json' <<'EOL'
 {
-    "git.ignoreLegacyWarning": true,
-    "terminal.integrated.experimentalRefreshOnResume": true,
-    "ansible.executionEnvironment.image": "ghcr.io/ansible/creator-ee:latest",
-    "window.menuBarVisibility": "visible",
-    "git.enableSmartCommit": true,
-    "workbench.tips.enabled": false,
-    "workbench.startupEditor": "readme",
-    "telemetry.enableTelemetry": false,
-    "search.smartCase": true,
-
-    // Recommended: Explicitly define the terminal shell's keybindings as high priority
-    "terminal.integrated.sendKeybindingsToShell": true,
-    
-    "git.confirmSync": false,
-    "workbench.colorTheme": "Visual Studio Dark",
-    "terminal.integrated.copyOnSelection": true,
-    "terminal.integrated.rightClickBehavior": "paste", // Changed to 'paste' for better browser compatibility
-    "ansible.ansible.useFullyQualifiedCollectionNames": true,
-    "files.associations": {
-        "*.yml": "ansible"
+    \"git.ignoreLegacyWarning\": true,
+    \"terminal.integrated.experimentalRefreshOnResume\": true,
+    \"ansible.executionEnvironment.image\": \"ghcr.io/ansible/creator-ee:latest\",
+    \"window.menuBarVisibility\": \"visible\",
+    \"git.enableSmartCommit\": true,
+    \"workbench.tips.enabled\": false,
+    \"workbench.startupEditor\": \"readme\",
+    \"telemetry.enableTelemetry\": false,
+    \"search.smartCase\": true,
+    \"terminal.integrated.sendKeybindingsToShell\": true,
+    \"git.confirmSync\": false,
+    \"workbench.colorTheme\": \"Visual Studio Dark\",
+    \"terminal.integrated.copyOnSelection\": true,
+    \"terminal.integrated.rightClickBehavior\": \"paste\",
+    \"ansible.ansible.useFullyQualifiedCollectionNames\": true,
+    \"files.associations\": {
+        \"*.yml\": \"ansible\"
     },
-    "ansible.executionEnvironment.enabled": true
+    \"ansible.executionEnvironment.enabled\": true
 }
-EOL'
+EOL"
 
-# --- ADD THIS NEW BLOCK ---
 # Create keybindings.json to forward common shortcuts to the terminal
-su - $USER -c 'mkdir -p /home/rhel/.local/share/code-server/User/'
-su - $USER -c 'cat >/home/rhel/.local/share/code-server/User/keybindings.json <<EOL
+su - $USER -c "mkdir -p '/home/rhel/.local/share/code-server/User/'"
+su - $USER -c "cat >'/home/rhel/.local/share/code-server/User/keybindings.json' <<'EOL'
 // Place your key bindings in this file to override the defaults
 [
     // Allow Ctrl+C for copy/interrupt in the terminal
     {
-        "key": "ctrl+c",
-        "command": "workbench.action.terminal.copySelection",
-        "when": "terminalTextSelectedInFocused"
+        \"key\": \"ctrl+c\",
+        \"command\": \"workbench.action.terminal.copySelection\",
+        \"when\": \"terminalTextSelectedInFocused\"
     },
     // Allow Ctrl+V for paste in the terminal
     {
-        "key": "ctrl+v",
-        "command": "workbench.action.terminal.paste",
-        "when": "terminalFocus && !terminalTextSelectedInFocused"
+        \"key\": \"ctrl+v\",
+        \"command\": \"workbench.action.terminal.paste\",
+        \"when\": \"terminalFocus && !terminalTextSelectedInFocused\"
     }
 ]
-EOL'
+EOL"
 
-# Optional: Display the contents of the new keybindings file to verify
+# Optional: Display the contents of the new files to verify
+echo "--- settings.json ---"
+cat /home/rhel/.local/share/code-server/User/settings.json
+echo ""
+echo "--- keybindings.json ---"
 cat /home/rhel/.local/share/code-server/User/keybindings.json
