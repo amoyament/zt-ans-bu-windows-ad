@@ -39,21 +39,10 @@ containers:
       - name: gitea-varlib
         emptyDir: {}
     commands: 
-        # - gitea admin user create --admin --username gitea --password gitea --email dummy@dummy.com --must-change-password=false
-        # - sleep 10
-        # - gitea admin user create --admin --username student --password learn_ansible --must-change-password=false --email student@localhost
-        # - sleep 10
         - gitea admin user create --admin --username gitea --password gitea --email dummy@dummy.com --must-change-password=false
-        - >
-          curl -X POST -H "accept: application/json" -H "Content-Type: application/json"
-          -u 'gitea:gitea' 
-          -d '{"username": "student", "full_name": "student", "description": "student", "password": "learn_ansible"}'
-          http://gitea:3000/api/v1/orgs
-        - >
-          curl -X POST -H "accept: application/json" -H "Content-Type: application/json"
-          -u 'gitea:gitea'
-          -d '{"clone_addr": "https://github.com/amoyament/aap_and_activedirectory", "repo_name": "aap_active_directory", "owner": "student", "uid": 2, "private": false}'
-          http://gitea:3000/api/v1/repos/migrate
+        - sleep 10
+        - gitea admin user create --admin --username student --password learn_ansible --must-change-password=false --email student@localhost
+        - sleep 10
     memory: 2Gi
     services:
       - name: gitea
