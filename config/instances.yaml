@@ -41,7 +41,7 @@ containers:
     commands: 
         - gitea admin user create --admin --username gitea --password gitea --email dummy@dummy.com --must-change-password=false
         - sleep 10
-        - gitea admin user create --admin --username student --password learn_ansible --must-change-password=false --email student@localhost
+        - gitea admin user create --admin --username student --password learn_ansible --must-change-password=false --email student@redhat.com
         - sleep 10
     memory: 2Gi
     services:

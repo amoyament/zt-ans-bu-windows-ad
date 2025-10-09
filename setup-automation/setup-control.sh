@@ -111,7 +111,7 @@ cat <<EOF | tee /tmp/git-setup.yml
         - git config --global credential.helper 'store --file /tmp/git-creds'
         - git config --global --add safe.directory /tmp/workshop_project
         - git config --global user.name "{{ student_user }}"
-        - git config --global user.email "{{ student_user }}@local"
+        - git config --global user.email "{{ student_user }}@lredhat.com"
 EOF
 
 # # Execute the setup playbooks
