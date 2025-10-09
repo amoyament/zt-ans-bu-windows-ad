@@ -205,3 +205,9 @@ virtualmachines:
         service: iis
         targetPort: 80
         tls: true
+    userdata: |-
+      #ps1_sysnative
+      $ErrorActionPreference = 'Stop'
+      $desktop = 'C:\Users\Administrator\Desktop'
+      New-Item -ItemType Directory -Path $desktop -Force | Out-Null
+      'Cloudbase-Init OK' | Out-File -FilePath (Join-Path $desktop 'userdata-test.txt') -Encoding UTF8
