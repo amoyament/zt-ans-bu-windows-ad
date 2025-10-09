@@ -53,7 +53,7 @@ sudo -u rhel "$GALAXY_BIN" collection install -p /home/rhel/.ansible/collections
 git config --global user.email "student@redhat.com"
 git config --global user.name "student"
 
-su - $USER -c 'cat >/home/$USER/.local/share/code-server/User/settings.json <<EOL
+su - $USER -c 'cat >/home/rhel/.local/share/code-server/User/settings.json <<EOL
 
 {
     "git.ignoreLegacyWarning": true,
@@ -76,7 +76,7 @@ su - $USER -c 'cat >/home/$USER/.local/share/code-server/User/settings.json <<EO
 
 EOL
 
-cat /home/$USER/.local/share/code-server/User/settings.json'
+cat /home/rhel/.local/share/code-server/User/settings.json'
 
 # # Add user keybindings for terminal copy/paste and run selected text
 # sudo -u rhel mkdir -p /home/rhel/.local/share/code-server/User
