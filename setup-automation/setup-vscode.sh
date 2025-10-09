@@ -54,30 +54,25 @@ sudo -u rhel mkdir -p /home/rhel/.local/share/code-server/User
 tee /home/rhel/.local/share/code-server/User/settings.json << 'JSONEOF'
 {
   "terminal.integrated.copyOnSelection": true,
-  "terminal.integrated.rightClickBehavior": "paste",
-  "terminal.integrated.allowChords": true,
-  "keyboard.dispatch": "keyCode",
-  "window.menuBarVisibility": "classic",
-  "workbench.activityBar.location": "left",
-  "workbench.statusBar.visible": true
+  "terminal.integrated.rightClickBehavior": "copyPaste"
 }
 JSONEOF
 chown -R rhel:rhel /home/rhel/.local/share/code-server/User || true
 
-# Add user keybindings for terminal copy/paste and run selected text
-sudo -u rhel mkdir -p /home/rhel/.local/share/code-server/User
-tee /home/rhel/.local/share/code-server/User/keybindings.json << 'JSONEOF'
-[
-  { "key": "ctrl+c", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
-  { "key": "ctrl+insert", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
-  { "key": "ctrl+v", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
-  { "key": "cmd+c", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
-  { "key": "cmd+v", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
-  { "key": "ctrl+shift+v", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
-  { "key": "ctrl+shift+c", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
-  { "key": "shift+insert", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
-  { "key": "ctrl+enter", "command": "workbench.action.terminal.runSelectedText", "when": "editorTextFocus && editorHasSelection" },
-  { "key": "cmd+enter", "command": "workbench.action.terminal.runSelectedText", "when": "editorTextFocus && editorHasSelection" }
-]
-JSONEOF
-chown -R rhel:rhel /home/rhel/.local/share/code-server/User || true
+# # Add user keybindings for terminal copy/paste and run selected text
+# sudo -u rhel mkdir -p /home/rhel/.local/share/code-server/User
+# tee /home/rhel/.local/share/code-server/User/keybindings.json << 'JSONEOF'
+# [
+#   { "key": "ctrl+c", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
+#   { "key": "ctrl+insert", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
+#   { "key": "ctrl+v", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
+#   { "key": "cmd+c", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
+#   { "key": "cmd+v", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
+#   { "key": "ctrl+shift+v", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
+#   { "key": "ctrl+shift+c", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
+#   { "key": "shift+insert", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
+#   { "key": "ctrl+enter", "command": "workbench.action.terminal.runSelectedText", "when": "editorTextFocus && editorHasSelection" },
+#   { "key": "cmd+enter", "command": "workbench.action.terminal.runSelectedText", "when": "editorTextFocus && editorHasSelection" }
+# ]
+# JSONEOF
+# chown -R rhel:rhel /home/rhel/.local/share/code-server/User || true
