@@ -47,12 +47,12 @@ containers:
         - >
           curl -X POST -H "accept: application/json" -H "Content-Type: application/json"
           -u 'gitea:gitea' 
-          -d '{"username": "student", "full_name": "student", "description": "student"}'
+          -d '{"username": "student", "full_name": "student", "description": "student", "password": "learn_ansible"}'
           http://gitea:3000/api/v1/orgs
         - >
           curl -X POST -H "accept: application/json" -H "Content-Type: application/json"
           -u 'gitea:gitea'
-          -d '{"clone_addr": "https://github.com/amoyament/aap_and_activedirectory", "repo_name": "aap25-roadshow-content", "owner": "student", "uid": 2, "private": false}'
+          -d '{"clone_addr": "https://github.com/amoyament/aap_and_activedirectory", "repo_name": "aap_active_directory", "owner": "student", "uid": 2, "private": false}'
           http://gitea:3000/api/v1/repos/migrate
     memory: 2Gi
     services:
