@@ -179,6 +179,16 @@ virtualmachines:
     interface_model: "e1000e"
     networks:
       - default
+    userdata: |-
+      #ps1
+      $ErrorActionPreference = 'Stop'
+      Set-ExecutionPolicy Bypass -Scope Process -Force
+      Start-Transcript -Path 'C:\\Windows\\Temp\\userdata-transcript.txt' -Append
+      New-Item -ItemType Directory -Path 'C:\\Users\\Administrator\\Desktop' -Force | Out-Null
+      'Userdata OK' | Out-File 'C:\\Users\\Administrator\\Desktop\\userdata-test.txt' -Encoding UTF8
+      New-Item -ItemType Directory -Path 'C:\\Users\\Public\\Desktop' -Force | Out-Null
+      'Userdata OK' | Out-File 'C:\\Users\\Public\\Desktop\\userdata-test.txt' -Encoding UTF8
+      Stop-Transcript
     services:
       - name: windows
         ports:
@@ -205,9 +215,3 @@ virtualmachines:
         service: iis
         targetPort: 80
         tls: true
-    userdata: |-
-      #ps1_sysnative
-      $ErrorActionPreference = 'Stop'
-      $desktop = 'C:\Users\Administrator\Desktop'
-      New-Item -ItemType Directory -Path $desktop -Force | Out-Null
-      'Cloudbase-Init OK' | Out-File -FilePath (Join-Path $desktop 'userdata-test.txt') -Encoding UTF8
