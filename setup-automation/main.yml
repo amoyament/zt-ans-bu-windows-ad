@@ -21,18 +21,6 @@
         ansible_python_interpreter: /usr/libexec/platform-python
       loop:
         - vscode
-        # - windows
-
-    - name: Override connection variables for Windows host
-      ansible.builtin.add_host:
-        name: windows
-        ansible_connection: winrm
-        ansible_port: 5985
-        ansible_winrm_scheme: http
-        ansible_winrm_server_cert_validation: ignore
-        ansible_winrm_transport: ntlm
-        ansible_user: Administrator
-        ansible_password: "ansible123!"
 
 - name: Demo Playbook for the ansible-runner API
   hosts: all:!localhost
@@ -41,21 +29,9 @@
     satellite_url: "{{ lookup('ansible.builtin.env', 'SATELLITE_URL') }}"
     satellite_org: "{{ lookup('ansible.builtin.env', 'SATELLITE_ORG') }}"
     satellite_activationkey: "{{ lookup('ansible.builtin.env', 'SATELLITE_ACTIVATIONKEY') }}"
-    guid: "{{ lookup('ansible.builtin.env', 'GUID') }}"
-    domain: "{{ lookup('ansible.builtin.env', 'DOMAIN') }}"
   tasks:
-    - name: "Waiting for the port tcp/22 to be open"
+    - name: Waiting for the port tcp/22 to be open"
       ansible.builtin.wait_for_connection:
-      when: inventory_hostname != 'windows'
-
-    - name: "Wait for WinRM on tcp/5985 (Windows)"
-      when: inventory_hostname == 'windows'
-      ansible.builtin.wait_for:
-        host: "{{ ansible_host | default(inventory_hostname) }}"
-        port: 5985
-        delay: 1
-        timeout: 180
-      delegate_to: localhost
 
     - name: Set config_host variable with ansible_host value
       ansible.builtin.set_fact:
@@ -68,21 +44,20 @@
         mode: '0755'
 
     - name: Check if setup-server.sh exists
-      when: inventory_hostname != 'windows'
       ansible.builtin.stat:
         path: "./setup-{{ config_host }}.sh"
       delegate_to: localhost
       register: r_script_test
 
     - name: Copy script file
-      when: inventory_hostname != 'windows' and r_script_test.stat.exists
+      when: r_script_test.stat.exists
       ansible.builtin.copy:
         src: "./setup-{{ ansible_host }}.sh"
         dest: "/tmp/setup-scripts/setup-{{ ansible_host }}.sh"
       register: r_result
 
-    - name: Execute setup script
-      when: inventory_hostname != 'windows' and r_script_test.stat.exists
+    - name: Execute setup-node.sh if it exists
+      when: r_script_test.stat.exists
       ansible.builtin.shell: "sh -x /tmp/setup-scripts/setup-{{ ansible_host }}.sh > /tmp/setup-scripts/setup-{{ ansible_host }}.log 2>&1"
       become: true
       register: r_result
@@ -90,24 +65,11 @@
         SATELLITE_URL: "{{ satellite_url }}"
         SATELLITE_ORG: "{{ satellite_org }}"
         SATELLITE_ACTIVATIONKEY: "{{ satellite_activationkey }}"
-        GUID: "{{ guid }}"
-        DOMAIN: "{{ domain }}"
-
-    - name: Copy Windows setup script (PowerShell)
-      when: inventory_hostname == 'windows'
-      ansible.windows.win_copy:
-        src: "./setup-automation/windows-setup.ps1"
-        dest: "C:\\Windows\\Temp\\windows-setup.ps1"
-
-    - name: Execute Windows setup script
-      when: inventory_hostname == 'windows'
-      ansible.windows.win_shell: "powershell -ExecutionPolicy Bypass -File C:\\Windows\\Temp\\windows-setup.ps1"
-      register: r_result
 
     - name: Output script result
       ansible.builtin.debug:
         var: r_result.stdout
-      when: r_result is defined
+      when: r_script_test.stat.exists
 
     - name: Write script result to file
       ansible.builtin.copy:

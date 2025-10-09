@@ -23,7 +23,7 @@ tee /tmp/inventory << EOF
 controller.acme.example.com ansible_host=controller ansible_user=rhel ansible_connection=local
 
 [windowssrv]
-windows ansible_host=windows ansible_user=Administrator ansible_password=ansible123! ansible_connection=winrm ansible_port=5985 ansible_winrm_scheme=http ansible_winrm_transport=ntlm ansible_winrm_server_cert_validation=ignore
+windows ansible_host=windows ansible_user=Administrator ansible_password=ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=http ansible_winrm_transport=ntlm ansible_winrm_server_cert_validation=ignore
 
 [all:vars]
 ansible_user = rhel
@@ -159,7 +159,7 @@ cat <<EOF | tee /tmp/windows-setup.yml
 
     - name: Open firewall for WinRM
       ansible.windows.win_shell: |
-        New-NetFirewallRule -DisplayName 'WinRM-HTTP' -Direction Inbound -Protocol TCP -LocalPort 5985 -Action Allow
+        New-NetFirewallRule -DisplayName 'WinRM-HTTP' -Direction Inbound -Protocol TCP -LocalPort 5986 -Action Allow
         New-NetFirewallRule -DisplayName 'WinRM-HTTPS' -Direction Inbound -Protocol TCP -LocalPort 5986 -Action Allow
       args:
         executable: PowerShell
