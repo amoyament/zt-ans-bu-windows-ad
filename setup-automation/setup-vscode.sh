@@ -52,9 +52,7 @@ sudo -u rhel "$GALAXY_BIN" collection install -p /home/rhel/.ansible/collections
 # Configure code-server user settings
 git config --global user.email "student@redhat.com"
 git config --global user.name "student"
-
 su - $USER -c 'cat >/home/rhel/.local/share/code-server/User/settings.json <<EOL
-
 {
     "git.ignoreLegacyWarning": true,
     "terminal.integrated.experimentalRefreshOnResume": true,
@@ -65,35 +63,42 @@ su - $USER -c 'cat >/home/rhel/.local/share/code-server/User/settings.json <<EOL
     "workbench.startupEditor": "readme",
     "telemetry.enableTelemetry": false,
     "search.smartCase": true,
+
+    // Recommended: Explicitly define the terminal shell's keybindings as high priority
+    "terminal.integrated.sendKeybindingsToShell": true,
+    
     "git.confirmSync": false,
     "workbench.colorTheme": "Visual Studio Dark",
     "terminal.integrated.copyOnSelection": true,
-    "terminal.integrated.rightClickBehavior": "copyPaste",
+    "terminal.integrated.rightClickBehavior": "paste", // Changed to 'paste' for better browser compatibility
     "ansible.ansible.useFullyQualifiedCollectionNames": true,
     "files.associations": {
         "*.yml": "ansible"
     },
     "ansible.executionEnvironment.enabled": true
 }
+EOL'
 
-EOL
-
-cat /home/rhel/.local/share/code-server/User/settings.json'
-
-# Add user keybindings for terminal copy/paste and run selected text
-sudo -u rhel mkdir -p /home/rhel/.local/share/code-server/User
-tee /home/rhel/.local/share/code-server/User/keybindings.json << 'JSONEOF'
+# --- ADD THIS NEW BLOCK ---
+# Create keybindings.json to forward common shortcuts to the terminal
+su - $USER -c 'mkdir -p /home/rhel/.local/share/code-server/User/'
+su - $USER -c 'cat >/home/rhel/.local/share/code-server/User/keybindings.json <<EOL
+// Place your key bindings in this file to override the defaults
 [
-  { "key": "ctrl+c", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
-  { "key": "ctrl+insert", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
-  { "key": "ctrl+v", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
-  { "key": "cmd+c", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
-  { "key": "cmd+v", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
-  { "key": "ctrl+shift+v", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
-  { "key": "ctrl+shift+c", "command": "workbench.action.terminal.copySelection", "when": "terminalFocus && terminalTextSelected" },
-  { "key": "shift+insert", "command": "workbench.action.terminal.paste", "when": "terminalFocus" },
-  { "key": "ctrl+enter", "command": "workbench.action.terminal.runSelectedText", "when": "editorTextFocus && editorHasSelection" },
-  { "key": "cmd+enter", "command": "workbench.action.terminal.runSelectedText", "when": "editorTextFocus && editorHasSelection" }
+    // Allow Ctrl+C for copy/interrupt in the terminal
+    {
+        "key": "ctrl+c",
+        "command": "workbench.action.terminal.copySelection",
+        "when": "terminalTextSelectedInFocused"
+    },
+    // Allow Ctrl+V for paste in the terminal
+    {
+        "key": "ctrl+v",
+        "command": "workbench.action.terminal.paste",
+        "when": "terminalFocus && !terminalTextSelectedInFocused"
+    }
 ]
-JSONEOF
-chown -R rhel:rhel /home/rhel/.local/share/code-server/User || true
+EOL'
+
+# Optional: Display the contents of the new keybindings file to verify
+cat /home/rhel/.local/share/code-server/User/keybindings.json
