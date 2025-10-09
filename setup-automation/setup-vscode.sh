@@ -52,55 +52,42 @@ sudo -u rhel "$GALAXY_BIN" collection install -p /home/rhel/.ansible/collections
 # Configure code-server user settings
 git config --global user.email "student@redhat.com"
 git config --global user.name "student"
+#!/bin/bash
 
-# Configure code-server user settings
-su - $USER -c "cat >'/home/rhel/.local/share/code-server/User/settings.json' <<'EOL'
+# Define the user and config directory
+USER_HOME="/home/rhel"
+CODE_USER_DIR="$USER_HOME/.local/share/code-server/User"
+
+# Ensure the config directory exists
+sudo -u rhel mkdir -p "$CODE_USER_DIR"
+
+# --- Create settings.json ---
+# This file handles overall behavior, including disabling paste protection.
+sudo -u rhel tee "$CODE_USER_DIR/settings.json" > /dev/null <<'EOL'
 {
-    \"git.ignoreLegacyWarning\": true,
-    \"terminal.integrated.experimentalRefreshOnResume\": true,
-    \"ansible.executionEnvironment.image\": \"ghcr.io/ansible/creator-ee:latest\",
-    \"window.menuBarVisibility\": \"visible\",
-    \"git.enableSmartCommit\": true,
-    \"workbench.tips.enabled\": false,
-    \"workbench.startupEditor\": \"readme\",
-    \"telemetry.enableTelemetry\": false,
-    \"search.smartCase\": true,
-    \"terminal.integrated.sendKeybindingsToShell\": true,
-    \"git.confirmSync\": false,
-    \"workbench.colorTheme\": \"Visual Studio Dark\",
-    \"terminal.integrated.copyOnSelection\": true,
-    \"terminal.integrated.rightClickBehavior\": \"paste\",
-    \"ansible.ansible.useFullyQualifiedCollectionNames\": true,
-    \"files.associations\": {
-        \"*.yml\": \"ansible\"
-    },
-    \"ansible.executionEnvironment.enabled\": true
+    "workbench.colorTheme": "Visual Studio Dark",
+    "workbench.startupEditor": "readme",
+    "terminal.integrated.sendKeybindingsToShell": true,
+    "terminal.integrated.copyOnSelection": true,
+    "terminal.integrated.rightClickBehavior": "paste",
+    "terminal.integrated.pasteProtection.enabled": false
 }
-EOL"
+EOL
 
-# Create keybindings.json to forward common shortcuts to the terminal
-su - $USER -c "mkdir -p '/home/rhel/.local/share/code-server/User/'"
-su - $USER -c "cat >'/home/rhel/.local/share/code-server/User/keybindings.json' <<'EOL'
-// Place your key bindings in this file to override the defaults
+# --- Create keybindings.json ---
+# This file explicitly tells VS Code to send Ctrl+V to the terminal.
+sudo -u rhel tee "$CODE_USER_DIR/keybindings.json" > /dev/null <<'EOL'
 [
-    // Allow Ctrl+C for copy/interrupt in the terminal
     {
-        \"key\": \"ctrl+c\",
-        \"command\": \"workbench.action.terminal.copySelection\",
-        \"when\": \"terminalTextSelectedInFocused\"
-    },
-    // Allow Ctrl+V for paste in the terminal
-    {
-        \"key\": \"ctrl+v\",
-        \"command\": \"workbench.action.terminal.paste\",
-        \"when\": \"terminalFocus && !terminalTextSelectedInFocused\"
+        "key": "ctrl+v",
+        "command": "workbench.action.terminal.paste",
+        "when": "terminalFocus"
     }
 ]
-EOL"
+EOL
 
-# Optional: Display the contents of the new files to verify
-echo "--- settings.json ---"
-cat /home/rhel/.local/share/code-server/User/settings.json
-echo ""
-echo "--- keybindings.json ---"
-cat /home/rhel/.local/share/code-server/User/keybindings.json
+# --- Restart code-server to apply all changes ---
+echo "Configuration files updated. Restarting code-server..."
+pkill code-server
+
+echo "Done. Please refresh your browser tab."
