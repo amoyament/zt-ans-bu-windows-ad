@@ -48,7 +48,3 @@ GALAXY_BIN="/usr/bin/ansible-galaxy"
 # Create collections dir and install Windows collections for rhel user
 sudo -u rhel mkdir -p /home/rhel/.ansible/collections
 sudo -u rhel "$GALAXY_BIN" collection install -p /home/rhel/.ansible/collections ansible.windows community.windows microsoft.ad || true
-
-# Configure code-server user settings
-git config --global user.email "student@redhat.com"
-git config --global user.name "student"
