@@ -183,11 +183,9 @@ virtualmachines:
       #ps1
       $ErrorActionPreference = 'Stop'
       Set-ExecutionPolicy Bypass -Scope Process -Force
-      Start-Transcript -Path 'C:\\Windows\\Temp\\userdata-transcript.txt' -Append
-      New-Item -ItemType Directory -Path 'C:\\Users\\Administrator\\Desktop' -Force | Out-Null
-      'Userdata OK' | Out-File 'C:\\Users\\Administrator\\Desktop\\userdata-test.txt' -Encoding UTF8
-      New-Item -ItemType Directory -Path 'C:\\Users\\Public\\Desktop' -Force | Out-Null
-      'Userdata OK' | Out-File 'C:\\Users\\Public\\Desktop\\userdata-test.txt' -Encoding UTF8
+      Start-Transcript -Path 'C:\Windows\Temp\userdata-transcript.txt' -Append
+      'Userdata OK' | Out-File 'C:\Windows\Temp\userdata-ok.txt' -Encoding UTF8
+      'Userdata OK' | Out-File 'C:\userdata-ok.txt' -Encoding UTF8
       Stop-Transcript
     services:
       - name: windows
