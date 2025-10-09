@@ -49,15 +49,34 @@ GALAXY_BIN="/usr/bin/ansible-galaxy"
 sudo -u rhel mkdir -p /home/rhel/.ansible/collections
 sudo -u rhel "$GALAXY_BIN" collection install -p /home/rhel/.ansible/collections ansible.windows community.windows microsoft.ad || true
 
-# Configure code-server user settings to improve terminal UX (copy/paste)
-sudo -u rhel mkdir -p /home/rhel/.local/share/code-server/User
-tee /home/rhel/.local/share/code-server/User/settings.json << 'JSONEOF'
+# Configure code-server user settings
+git config --global user.email "student@redhat.com"
+git config --global user.name "student"
+
+su - $USER -c 'cat >/home/$USER/.local/share/code-server/User/settings.json <<EOL
+
 {
-  "terminal.integrated.copyOnSelection": true,
-  "terminal.integrated.rightClickBehavior": "copyPaste"
+    "git.ignoreLegacyWarning": true,
+    "terminal.integrated.experimentalRefreshOnResume": true,
+    "ansible.executionEnvironment.image": "ghcr.io/ansible/creator-ee:latest",
+    "window.menuBarVisibility": "visible",
+    "git.enableSmartCommit": true,
+    "workbench.tips.enabled": false,
+    "workbench.startupEditor": "readme",
+    "telemetry.enableTelemetry": false,
+    "search.smartCase": true,
+    "git.confirmSync": false,
+    "workbench.colorTheme": "Visual Studio Dark",
+    "ansible.ansible.useFullyQualifiedCollectionNames": true,
+    "files.associations": {
+        "*.yml": "ansible"
+    },
+    "ansible.executionEnvironment.enabled": true
 }
-JSONEOF
-chown -R rhel:rhel /home/rhel/.local/share/code-server/User || true
+
+EOL
+
+cat /home/$USER/.local/share/code-server/User/settings.json'
 
 # # Add user keybindings for terminal copy/paste and run selected text
 # sudo -u rhel mkdir -p /home/rhel/.local/share/code-server/User
