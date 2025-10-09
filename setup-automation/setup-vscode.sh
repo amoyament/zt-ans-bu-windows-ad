@@ -67,6 +67,8 @@ su - $USER -c 'cat >/home/rhel/.local/share/code-server/User/settings.json <<EOL
     "search.smartCase": true,
     "git.confirmSync": false,
     "workbench.colorTheme": "Visual Studio Dark",
+    "terminal.integrated.copyOnSelection": true,
+    "terminal.integrated.rightClickBehavior": "copyPaste",
     "ansible.ansible.useFullyQualifiedCollectionNames": true,
     "files.associations": {
         "*.yml": "ansible"
