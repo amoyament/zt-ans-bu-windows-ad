@@ -91,63 +91,63 @@
         - r_result is defined
         - r_result.rc != 0
 
-- name: Define Windows host and wait for WinRM 5986
-  hosts: localhost
-  gather_facts: false
-  vars:
-    win_host: windows
-    win_user: Administrator
-    win_pass: ansible123!
-  tasks:
-    - name: Add Windows to in-memory inventory
-      ansible.builtin.add_host:
-        name: "{{ win_host }}"
-        groups: windowssrv
-        ansible_connection: winrm
-        ansible_user: "{{ win_user }}"
-        ansible_password: "{{ win_pass }}"
-        ansible_port: 5986
-        ansible_winrm_scheme: https
-        ansible_winrm_transport: credssp
-        ansible_winrm_server_cert_validation: ignore
+# - name: Define Windows host and wait for WinRM 5986
+#   hosts: localhost
+#   gather_facts: false
+#   vars:
+#     win_host: windows
+#     win_user: Administrator
+#     win_pass: ansible123!
+#   tasks:
+#     - name: Add Windows to in-memory inventory
+#       ansible.builtin.add_host:
+#         name: "{{ win_host }}"
+#         groups: windowssrv
+#         ansible_connection: winrm
+#         ansible_user: "{{ win_user }}"
+#         ansible_password: "{{ win_pass }}"
+#         ansible_port: 5986
+#         ansible_winrm_scheme: https
+#         ansible_winrm_transport: credssp
+#         ansible_winrm_server_cert_validation: ignore
 
-    - name: Wait for WinRM HTTPS to be reachable
-      ansible.builtin.wait_for:
-        host: "{{ win_host }}"
-        port: 5986
-        delay: 3
-        timeout: 600
+#     - name: Wait for WinRM HTTPS to be reachable
+#       ansible.builtin.wait_for:
+#         host: "{{ win_host }}"
+#         port: 5986
+#         delay: 3
+#         timeout: 600
 
-- name: Upload and run the Windows setup PowerShell script
-  hosts: windowssrv
-  gather_facts: false
-  vars:
-    win_setup_dest: C:\\setup\\windows-setup.ps1
-    win_setup_url: http://gitea:3000/student/aap_active_directory/raw/branch/main/windows-setup.ps1
-  tasks:
-    - name: Ensure setup directory exists
-      ansible.windows.win_file:
-        path: C:\\setup
-        state: directory
+# - name: Upload and run the Windows setup PowerShell script
+#   hosts: windowssrv
+#   gather_facts: false
+#   vars:
+#     win_setup_dest: C:\\setup\\windows-setup.ps1
+#     win_setup_url: http://gitea:3000/student/aap_active_directory/raw/branch/main/windows-setup.ps1
+#   tasks:
+#     - name: Ensure setup directory exists
+#       ansible.windows.win_file:
+#         path: C:\\setup
+#         state: directory
 
-    - name: Check for local windows-setup.ps1 next to this playbook
-      ansible.builtin.stat:
-        path: "{{ playbook_dir }}/windows-setup.ps1"
-      delegate_to: localhost
-      register: r_local_script
+#     - name: Check for local windows-setup.ps1 next to this playbook
+#       ansible.builtin.stat:
+#         path: "{{ playbook_dir }}/windows-setup.ps1"
+#       delegate_to: localhost
+#       register: r_local_script
 
-    - name: Copy windows-setup.ps1 from repo to Windows (if present locally)
-      when: r_local_script.stat.exists | default(false)
-      ansible.windows.win_copy:
-        src: "{{ playbook_dir }}/windows-setup.ps1"
-        dest: "{{ win_setup_dest }}"
+#     - name: Copy windows-setup.ps1 from repo to Windows (if present locally)
+#       when: r_local_script.stat.exists | default(false)
+#       ansible.windows.win_copy:
+#         src: "{{ playbook_dir }}/windows-setup.ps1"
+#         dest: "{{ win_setup_dest }}"
 
-    - name: Download windows-setup.ps1 from Gitea (fallback)
-      when: not (r_local_script.stat.exists | default(false))
-      ansible.windows.win_get_url:
-        url: "{{ win_setup_url }}"
-        dest: "{{ win_setup_dest }}"
+#     - name: Download windows-setup.ps1 from Gitea (fallback)
+#       when: not (r_local_script.stat.exists | default(false))
+#       ansible.windows.win_get_url:
+#         url: "{{ win_setup_url }}"
+#         dest: "{{ win_setup_dest }}"
 
-    - name: Execute windows-setup.ps1
-      ansible.windows.win_shell: |
-        PowerShell -ExecutionPolicy Bypass -File "{{ win_setup_dest }}"
+#     - name: Execute windows-setup.ps1
+#       ansible.windows.win_shell: |
+#         PowerShell -ExecutionPolicy Bypass -File "{{ win_setup_dest }}"
