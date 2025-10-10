@@ -16,7 +16,7 @@ try {
   Write-Host 'NTDS service found; skipping forest creation'
 }
 catch {
-  $SecurePassword = ConvertTo-SecureString 'ansible123!' -AsPlainText -Force
+  $SecurePassword = ConvertTo-SecureString 'Ansible123!' -AsPlainText -Force
   Install-ADDSForest -DomainName 'lab.local' -DomainNetbiosName 'LAB' -SafeModeAdministratorPassword $SecurePassword -Force
 }
 
