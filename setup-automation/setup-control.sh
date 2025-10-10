@@ -170,49 +170,43 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
           Install-WindowsFeature -Name Web-Server -IncludeManagementTools
           Install-WindowsFeature -Name Web-Mgmt-Console
 
-          # Install Microsoft Edge via Chocolatey only
-          try {
-            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-            Set-ExecutionPolicy Bypass -Scope Process -Force
-            $choco = Get-Command choco -ErrorAction SilentlyContinue
-            if (-not $choco) {
-              Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-            }
-            $chocoExe = 'C:\\ProgramData\\chocolatey\\bin\\choco.exe'
-            if (-not (Test-Path $chocoExe)) { throw 'Chocolatey did not install correctly.' }
-            & $chocoExe install microsoft-edge -y --no-progress --force
-          } catch {
-            Write-Warning ("Microsoft Edge installation via Chocolatey failed: {0}" -f $_)
-          }
+          # # Install Microsoft Edge via Chocolatey only
+          # try {
+          #   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          #   Set-ExecutionPolicy Bypass -Scope Process -Force
+          #   $choco = Get-Command choco -ErrorAction SilentlyContinue
+          #   if (-not $choco) {
+          #     Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          #   }
+          #   $chocoExe = 'C:\\ProgramData\\chocolatey\\bin\\choco.exe'
+          #   if (-not (Test-Path $chocoExe)) { throw 'Chocolatey did not install correctly.' }
+          #   & $chocoExe install microsoft-edge -y --no-progress --force
+          # } catch {
+          #   Write-Warning ("Microsoft Edge installation via Chocolatey failed: {0}" -f $_)
+          # }
 
-          $html = @'
-          <!DOCTYPE html>
-          <html>
-          <head>
-              <title>Windows AD Lab</title>
-          </head>
-          <body>
-              <h1>Windows AD Domain Controller</h1>
-              <p>This is the Windows AD domain controller for the lab.</p>
-          </body>
-          </html>
-          '@
-          $html | Out-File -FilePath 'C:\\inetpub\\wwwroot\\index.html' -Encoding UTF8
+          # (Landing page, marker file, and final message are managed in repo PowerShell script)
+          # $html = @'
+          # <!DOCTYPE html>
+          # <html>
+          # <head>
+          #     <title>Windows AD Lab</title>
+          # </head>
+          # <body>
+          #     <h1>Windows AD Domain Controller</h1>
+          #     <p>This is the Windows AD domain controller for the lab.</p>
+          # </body>
+          # </html>
+          # '@
+          # $html | Out-File -FilePath 'C:\\inetpub\\wwwroot\\index.html' -Encoding UTF8
 
-          # Marker file on desktop to verify execution
-          New-Item -Path "$HOME\\Desktop\\MyFile.txt" -ItemType File -Force | Out-Null
+          # New-Item -Path "$HOME\\Desktop\\MyFile.txt" -ItemType File -Force | Out-Null
 
-          Write-Host 'Windows AD setup (PowerShell) completed.'
+          # Write-Host 'Windows AD setup (PowerShell) completed.'
 
-    # - name: Execute windows-setup.ps1
-    #   ansible.windows.win_shell: |
-    #     PowerShell -ExecutionPolicy Bypass -File C:\\setup\\windows-setup.ps1
-
-    - name: Install Microsoft Edge (direct MSI via win_package)
-      ansible.windows.win_package:
-        path: https://go.microsoft.com/fwlink/?linkid=2109047
-        arguments: /qn /norestart
-        state: present
+    - name: Execute windows-setup.ps1
+      ansible.windows.win_shell: |
+        PowerShell -ExecutionPolicy Bypass -File C:\\setup\\windows-setup.ps1
 EOF
 
 echo "=== Running Windows configuration (PowerShell script) ==="
