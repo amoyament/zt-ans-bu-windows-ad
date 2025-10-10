@@ -119,6 +119,14 @@ echo "=== Running Git/Gitea Setup ==="
 ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/git-setup.yml
 
 
+# Ensure Python WinRM dependencies on control
+echo "=== Ensuring Python WinRM dependencies on control ==="
+if ! command -v pip3 >/dev/null 2>&1; then
+  dnf -y install python3-pip || yum -y install python3-pip || true
+fi
+python3 -m pip install --upgrade pip || true
+python3 -m pip install 'pywinrm[credssp]' requests-credssp requests-ntlm || true
+
 # SET UP WINDOWS (migrated from setup-windows.sh)
 echo "=== Preparing Windows configuration ==="
 ansible-galaxy collection install ansible.windows microsoft.ad || true
