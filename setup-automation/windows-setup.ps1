@@ -10,15 +10,7 @@ Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "192.168.1.100 wi
 # AD DS
 Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
 
-# Promote DC (skip if already promoted)
-try {
-  $null = (Get-Service NTDS -ErrorAction Stop)
-  Write-Host 'NTDS service found; skipping forest creation'
-}
-catch {
-  $SecurePassword = ConvertTo-SecureString 'Ansible123!' -AsPlainText -Force
-  Install-ADDSForest -DomainName 'lab.local' -DomainNetbiosName 'LAB' -SafeModeAdministratorPassword $SecurePassword -Force
-}
+# (Domain promotion moved to end to avoid interrupting subsequent steps)
 
 # WinRM
 winrm quickconfig -q
@@ -72,6 +64,16 @@ $html | Out-File -FilePath 'C:\inetpub\wwwroot\index.html' -Encoding UTF8
 
 # Marker file on desktop to verify execution
 New-Item -Path "$HOME\Desktop\MyFile.txt" -ItemType File -Force | Out-Null
+
+# Promote DC last (avoid reboot during earlier steps)
+try {
+  $null = (Get-Service NTDS -ErrorAction Stop)
+  Write-Host 'NTDS service found; skipping forest creation'
+}
+catch {
+  $SecurePassword = ConvertTo-SecureString 'Ansible123!' -AsPlainText -Force
+  Install-ADDSForest -DomainName 'lab.local' -DomainNetbiosName 'LAB' -SafeModeAdministratorPassword $SecurePassword -Force
+}
 
 Write-Host 'Windows AD setup (PowerShell) completed.'
 
