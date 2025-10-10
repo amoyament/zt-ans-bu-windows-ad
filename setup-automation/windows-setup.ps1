@@ -35,18 +35,26 @@ New-NetFirewallRule -DisplayName 'WinRM-HTTPS' -Direction Inbound -Protocol TCP 
 Install-WindowsFeature -Name Web-Server -IncludeManagementTools
 Install-WindowsFeature -Name Web-Mgmt-Console
 
-# # Install Microsoft Edge (download Evergreen MSI and install silently)
-# try {
-#   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-#   $edgeUrl = 'https://go.microsoft.com/fwlink/?linkid=2109047'  # Evergreen Stable x64 MSI
-#   $edgeMsi = Join-Path $env:TEMP 'MicrosoftEdgeEnterpriseX64.msi'
-#   Invoke-WebRequest -Uri $edgeUrl -OutFile $edgeMsi -UseBasicParsing
-#   $edgeLog = 'C:\\Windows\\Temp\\edge_install_ps1.log'
-#   Start-Process msiexec.exe -ArgumentList "/i `"$edgeMsi`" /qn /norestart /l*v `"$edgeLog`"" -Wait
-#   Remove-Item $edgeMsi -ErrorAction SilentlyContinue
-# } catch {
-#   Write-Warning ("Microsoft Edge installation failed: {0}" -f $_)
-# }
+# Install Microsoft Edge (resolve latest MSI from API, install silently, verify)
+try {
+  [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+  $api = 'https://edgeupdates.microsoft.com/api/products?platform=win64'
+  $data = Invoke-RestMethod -Uri $api -UseBasicParsing
+  $stable = $data | Where-Object { $_.Product -eq 'Stable' } | Select-Object -First 1
+  $release = $stable.Releases | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1
+  $artifact = $release.Artifacts | Where-Object { ($_.Type -and ($_.Type -match 'msi')) -or ($_.InstallerType -and ($_.InstallerType -match 'msi')) } | Select-Object -First 1
+  if (-not $artifact) { throw 'Unable to locate MSI artifact for Microsoft Edge.' }
+  $edgeUrl = $artifact.Location
+  $edgeMsi = Join-Path $env:TEMP 'MicrosoftEdgeEnterpriseX64.msi'
+  Invoke-WebRequest -Uri $edgeUrl -OutFile $edgeMsi -UseBasicParsing
+  $edgeLog = 'C:\\Windows\\Temp\\edge_install_ps1.log'
+  Start-Process msiexec.exe -ArgumentList "/i `"$edgeMsi`" /qn /norestart /l*v `"$edgeLog`"" -Wait
+  Remove-Item $edgeMsi -ErrorAction SilentlyContinue
+  $edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
+  if (-not (Test-Path $edgePath)) { throw 'Edge binary not found after installation.' }
+} catch {
+  Write-Warning ("Microsoft Edge installation failed: {0}" -f $_)
+}
 
 $html = @'
 <!DOCTYPE html>
