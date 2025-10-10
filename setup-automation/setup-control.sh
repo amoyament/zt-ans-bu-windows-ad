@@ -23,7 +23,7 @@ tee /tmp/inventory << EOF
 controller.acme.example.com ansible_host=controller ansible_user=rhel ansible_connection=local
 
 [windowssrv]
-windows ansible_host=windows ansible_user=Administrator ansible_password=ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=http ansible_winrm_transport=ntlm ansible_winrm_server_cert_validation=ignore
+windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore
 
 [all:vars]
 ansible_user = rhel
@@ -125,56 +125,52 @@ ansible-galaxy collection install ansible.windows microsoft.ad || true
 
 cat <<EOF | tee /tmp/windows-setup.yml
 ---
-- name: Configure Windows VM (setup-windows.sh migrated)
+- name: Push and execute windows-setup.ps1 on Windows
   hosts: windowssrv
   gather_facts: false
   tasks:
-    - name: Install AD DS
-      ansible.windows.win_feature:
-        name: AD-Domain-Services
-        include_management_tools: true
-        state: present
+    - name: Ensure setup directory exists
+      ansible.windows.win_file:
+        path: C:\\setup
+        state: directory
 
-    - name: Promote to domain controller if not already
-      ansible.windows.win_shell: |
-        try {
-          $null = Get-Service NTDS -ErrorAction Stop
-          Write-Output 'NTDS service found; skipping forest creation'
-        } catch {
-          $SecurePassword = ConvertTo-SecureString 'ansible123!' -AsPlainText -Force
-          Install-ADDSForest -DomainName 'lab.local' -DomainNetbiosName 'LAB' -SafeModeAdministratorPassword $SecurePassword -Force
-        }
-      args:
-        executable: PowerShell
-
-    - name: Configure WinRM
-      ansible.windows.win_shell: |
-        winrm quickconfig -q
-        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
-        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
-        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
-        winrm set winrm/config/service/auth '@{Basic="true"}'
-      args:
-        executable: PowerShell
-
-    - name: Open firewall for WinRM
-      ansible.windows.win_shell: |
-        New-NetFirewallRule -DisplayName 'WinRM-HTTP' -Direction Inbound -Protocol TCP -LocalPort 5986 -Action Allow
-        New-NetFirewallRule -DisplayName 'WinRM-HTTPS' -Direction Inbound -Protocol TCP -LocalPort 5986 -Action Allow
-      args:
-        executable: PowerShell
-
-    - name: Install IIS web server and management console
-      ansible.windows.win_feature:
-        name:
-          - Web-Server
-          - Web-Mgmt-Console
-        state: present
-        include_management_tools: true
-
-    - name: Create default IIS landing page
+    - name: Upload windows-setup.ps1 content
       ansible.windows.win_copy:
+        dest: C:\\setup\\windows-setup.ps1
         content: |
+          $ErrorActionPreference = 'Stop'
+
+          Write-Host 'Starting Windows AD setup (PowerShell)...'
+
+          # AD DS
+          Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+
+          # Promote DC (skip if already promoted)
+          try {
+            $null = (Get-Service NTDS -ErrorAction Stop)
+            Write-Host 'NTDS service found; skipping forest creation'
+          }
+          catch {
+            $SecurePassword = ConvertTo-SecureString 'Ansible123!' -AsPlainText -Force
+            Install-ADDSForest -DomainName 'lab.local' -DomainNetbiosName 'LAB' -SafeModeAdministratorPassword $SecurePassword -Force
+          }
+
+          # WinRM
+          winrm quickconfig -q
+          winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+          winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+          winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+          winrm set winrm/config/service/auth '@{Basic="true"}'
+
+          # Firewall
+          New-NetFirewallRule -DisplayName 'WinRM-HTTP' -Direction Inbound -Protocol TCP -LocalPort 5985 -Action Allow -ErrorAction SilentlyContinue
+          New-NetFirewallRule -DisplayName 'WinRM-HTTPS' -Direction Inbound -Protocol TCP -LocalPort 5986 -Action Allow -ErrorAction SilentlyContinue
+
+          # IIS
+          Install-WindowsFeature -Name Web-Server -IncludeManagementTools
+          Install-WindowsFeature -Name Web-Mgmt-Console
+
+          $html = @'
           <!DOCTYPE html>
           <html>
           <head>
@@ -185,11 +181,21 @@ cat <<EOF | tee /tmp/windows-setup.yml
               <p>This is the Windows AD domain controller for the lab.</p>
           </body>
           </html>
-        dest: C:\\inetpub\\wwwroot\\index.html
+          '@
+          $html | Out-File -FilePath 'C:\\inetpub\\wwwroot\\index.html' -Encoding UTF8
+
+          # Marker file on desktop to verify execution
+          New-Item -Path "$HOME\\Desktop\\MyFile.txt" -ItemType File -Force | Out-Null
+
+          Write-Host 'Windows AD setup (PowerShell) completed.'
+
+    - name: Execute windows-setup.ps1
+      ansible.windows.win_shell: |
+        PowerShell -ExecutionPolicy Bypass -File C:\\setup\\windows-setup.ps1
 EOF
 
-# echo "=== Running Windows configuration ==="
-# ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/windows-setup.yml
+echo "=== Running Windows configuration (PowerShell script) ==="
+ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/windows-setup.yml
 
 # (legacy domain.yml kept for reference)
 cat <<EOF | tee /tmp/domain.yml

@@ -3,9 +3,9 @@ $ErrorActionPreference = 'Stop'
 Write-Host 'Starting Windows AD setup (PowerShell)...'
 
 # Hosts entries
-Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "192.168.1.10 control.lab control"
-Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "192.168.1.11 vscode.lab vscode"
-Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "192.168.1.100 windows.lab windows"
+# Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "192.168.1.10 control.lab control"
+# Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "192.168.1.11 vscode.lab vscode"
+# Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "192.168.1.100 windows.lab windows"
 
 # AD DS
 Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
