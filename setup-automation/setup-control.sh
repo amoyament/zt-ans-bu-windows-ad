@@ -204,9 +204,9 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
 
           Write-Host 'Windows AD setup (PowerShell) completed.'
 
-    - name: Execute windows-setup.ps1
-      ansible.windows.win_shell: |
-        PowerShell -ExecutionPolicy Bypass -File C:\\setup\\windows-setup.ps1
+    # - name: Execute windows-setup.ps1
+    #   ansible.windows.win_shell: |
+    #     PowerShell -ExecutionPolicy Bypass -File C:\\setup\\windows-setup.ps1
 
     - name: Install Microsoft Edge (direct MSI via win_package)
       ansible.windows.win_package:
