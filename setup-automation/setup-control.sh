@@ -8,14 +8,6 @@ nmcli connection up enp2s0
 echo "192.168.1.10 control.lab control" >> /etc/hosts
 # echo "192.168.1.11 podman.lab podman" >> /etc/hosts
 
-
-
-# # ## setup rhel user
-# touch /etc/sudoers.d/rhel_sudoers
-# echo "%rhel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/rhel_sudoers
-# cp -a /root/.ssh/* /home/$USER/.ssh/.
-# chown -R rhel:rhel /home/$USER/.ssh
-
 # Create an inventory file for this environment
 tee /tmp/inventory << EOF
 
@@ -178,27 +170,19 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
           Install-WindowsFeature -Name Web-Server -IncludeManagementTools
           Install-WindowsFeature -Name Web-Mgmt-Console
 
-          # Install Microsoft Edge (winget if present; otherwise download MSI)
+          # Install Microsoft Edge via Chocolatey only
           try {
-            $winget = Get-Command winget -ErrorAction SilentlyContinue
-            if ($winget) {
-              winget install --id Microsoft.Edge -e --accept-source-agreements --accept-package-agreements --silent --source winget
-            } else {
-              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-              $api = 'https://edgeupdates.microsoft.com/api/products?platform=win64'
-              $data = Invoke-RestMethod -Uri $api -UseBasicParsing
-              $stable = $data | Where-Object { $_.Product -eq 'Stable' } | Select-Object -First 1
-              $release = $stable.Releases | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1
-              $artifact = $release.Artifacts | Where-Object { ($_.Type -and ($_.Type -match 'msi')) -or ($_.InstallerType -and ($_.InstallerType -match 'msi')) } | Select-Object -First 1
-              if (-not $artifact) { throw 'Unable to locate MSI artifact for Microsoft Edge.' }
-              $url = $artifact.Location
-              $tmp = Join-Path $env:TEMP 'MicrosoftEdgeEnterpriseX64.msi'
-              Invoke-WebRequest -Uri $url -OutFile $tmp -UseBasicParsing
-              Start-Process msiexec.exe -ArgumentList "/i `"$tmp`" /qn /norestart" -Wait
-              Remove-Item $tmp -ErrorAction SilentlyContinue
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Set-ExecutionPolicy Bypass -Scope Process -Force
+            $choco = Get-Command choco -ErrorAction SilentlyContinue
+            if (-not $choco) {
+              Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
             }
+            $chocoExe = 'C:\\ProgramData\\chocolatey\\bin\\choco.exe'
+            if (-not (Test-Path $chocoExe)) { throw 'Chocolatey did not install correctly.' }
+            & $chocoExe install microsoft-edge -y --no-progress --force
           } catch {
-            Write-Warning ("Microsoft Edge installation failed: {0}" -f $_)
+            Write-Warning ("Microsoft Edge installation via Chocolatey failed: {0}" -f $_)
           }
 
           $html = @'
@@ -550,7 +534,6 @@ cat <<EOF | tee /tmp/controller-setup.yml
     #     - "Windows Host"
     #    state: "present"
     #    controller_config_file: "/tmp/controller.cfg"
-
 
 EOF
 
