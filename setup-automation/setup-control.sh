@@ -123,6 +123,12 @@ python3 -m pip install 'pywinrm[credssp]' requests-credssp requests-ntlm || true
 echo "=== Preparing Windows configuration ==="
 ansible-galaxy collection install ansible.windows microsoft.ad || true
 
+# Ensure we copy the repo PowerShell to /tmp so Ansible can upload it
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -f "$SCRIPT_DIR/windows-setup.ps1" ]; then
+  cp "$SCRIPT_DIR/windows-setup.ps1" /tmp/windows-setup.ps1
+fi
+
 cat <<'EOF' | tee /tmp/windows-setup.yml
 ---
 - name: Push and execute windows-setup.ps1 on Windows
@@ -134,75 +140,10 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
         path: C:\\setup
         state: directory
 
-    - name: Upload windows-setup.ps1 content
+    - name: Copy windows-setup.ps1 from control host
       ansible.windows.win_copy:
+        src: /tmp/windows-setup.ps1
         dest: C:\\setup\\windows-setup.ps1
-        content: |
-          $ErrorActionPreference = 'Stop'
-
-          Write-Host 'Starting Windows AD setup (PowerShell)...'
-
-          # AD DS
-          Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
-
-          # Promote DC (skip if already promoted)
-          try {
-            $null = (Get-Service NTDS -ErrorAction Stop)
-            Write-Host 'NTDS service found; skipping forest creation'
-          }
-          catch {
-            $SecurePassword = ConvertTo-SecureString 'Ansible123!' -AsPlainText -Force
-            Install-ADDSForest -DomainName 'lab.local' -DomainNetbiosName 'LAB' -SafeModeAdministratorPassword $SecurePassword -Force
-          }
-
-          # WinRM
-          winrm quickconfig -q
-          winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
-          winrm set winrm/config '@{MaxTimeoutms="1800000"}'
-          winrm set winrm/config/service '@{AllowUnencrypted="true"}'
-          winrm set winrm/config/service/auth '@{Basic="true"}'
-
-          # Firewall
-          New-NetFirewallRule -DisplayName 'WinRM-HTTP' -Direction Inbound -Protocol TCP -LocalPort 5985 -Action Allow -ErrorAction SilentlyContinue
-          New-NetFirewallRule -DisplayName 'WinRM-HTTPS' -Direction Inbound -Protocol TCP -LocalPort 5986 -Action Allow -ErrorAction SilentlyContinue
-
-          # IIS
-          Install-WindowsFeature -Name Web-Server -IncludeManagementTools
-          Install-WindowsFeature -Name Web-Mgmt-Console
-
-          # # Install Microsoft Edge via Chocolatey only
-          # try {
-          #   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          #   Set-ExecutionPolicy Bypass -Scope Process -Force
-          #   $choco = Get-Command choco -ErrorAction SilentlyContinue
-          #   if (-not $choco) {
-          #     Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-          #   }
-          #   $chocoExe = 'C:\\ProgramData\\chocolatey\\bin\\choco.exe'
-          #   if (-not (Test-Path $chocoExe)) { throw 'Chocolatey did not install correctly.' }
-          #   & $chocoExe install microsoft-edge -y --no-progress --force
-          # } catch {
-          #   Write-Warning ("Microsoft Edge installation via Chocolatey failed: {0}" -f $_)
-          # }
-
-          # (Landing page, marker file, and final message are managed in repo PowerShell script)
-          # $html = @'
-          # <!DOCTYPE html>
-          # <html>
-          # <head>
-          #     <title>Windows AD Lab</title>
-          # </head>
-          # <body>
-          #     <h1>Windows AD Domain Controller</h1>
-          #     <p>This is the Windows AD domain controller for the lab.</p>
-          # </body>
-          # </html>
-          # '@
-          # $html | Out-File -FilePath 'C:\\inetpub\\wwwroot\\index.html' -Encoding UTF8
-
-          # New-Item -Path "$HOME\\Desktop\\MyFile.txt" -ItemType File -Force | Out-Null
-
-          # Write-Host 'Windows AD setup (PowerShell) completed.'
 
     - name: Execute windows-setup.ps1
       ansible.windows.win_shell: |
