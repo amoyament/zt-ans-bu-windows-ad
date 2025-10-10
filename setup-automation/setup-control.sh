@@ -207,6 +207,12 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
     - name: Execute windows-setup.ps1
       ansible.windows.win_shell: |
         PowerShell -ExecutionPolicy Bypass -File C:\\setup\\windows-setup.ps1
+
+    - name: Install Microsoft Edge (direct MSI via win_package)
+      ansible.windows.win_package:
+        path: https://go.microsoft.com/fwlink/?linkid=2109047
+        arguments: /qn /norestart
+        state: present
 EOF
 
 echo "=== Running Windows configuration (PowerShell script) ==="
