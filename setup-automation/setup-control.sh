@@ -178,6 +178,29 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
           Install-WindowsFeature -Name Web-Server -IncludeManagementTools
           Install-WindowsFeature -Name Web-Mgmt-Console
 
+          # Install Microsoft Edge (winget if present; otherwise download MSI)
+          try {
+            $winget = Get-Command winget -ErrorAction SilentlyContinue
+            if ($winget) {
+              winget install --id Microsoft.Edge -e --accept-source-agreements --accept-package-agreements --silent --source winget
+            } else {
+              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+              $api = 'https://edgeupdates.microsoft.com/api/products?platform=win64'
+              $data = Invoke-RestMethod -Uri $api -UseBasicParsing
+              $stable = $data | Where-Object { $_.Product -eq 'Stable' } | Select-Object -First 1
+              $release = $stable.Releases | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1
+              $artifact = $release.Artifacts | Where-Object { ($_.Type -and ($_.Type -match 'msi')) -or ($_.InstallerType -and ($_.InstallerType -match 'msi')) } | Select-Object -First 1
+              if (-not $artifact) { throw 'Unable to locate MSI artifact for Microsoft Edge.' }
+              $url = $artifact.Location
+              $tmp = Join-Path $env:TEMP 'MicrosoftEdgeEnterpriseX64.msi'
+              Invoke-WebRequest -Uri $url -OutFile $tmp -UseBasicParsing
+              Start-Process msiexec.exe -ArgumentList "/i `"$tmp`" /qn /norestart" -Wait
+              Remove-Item $tmp -ErrorAction SilentlyContinue
+            }
+          } catch {
+            Write-Warning ("Microsoft Edge installation failed: {0}" -f $_)
+          }
+
           $html = @'
           <!DOCTYPE html>
           <html>
