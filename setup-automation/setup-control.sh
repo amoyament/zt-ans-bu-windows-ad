@@ -111,7 +111,7 @@ cat <<EOF | tee /tmp/git-setup.yml
         - git config --global credential.helper 'store --file /tmp/git-creds'
         - git config --global --add safe.directory /tmp/workshop_project
         - git config --global user.name "{{ student_user }}"
-        - git config --global user.email "{{ student_user }}@lredhat.com"
+        - git config --global user.email "{{ student_user }}@redhat.com"
 EOF
 
 # # Execute the setup playbooks
@@ -123,7 +123,7 @@ ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bu
 echo "=== Preparing Windows configuration ==="
 ansible-galaxy collection install ansible.windows microsoft.ad || true
 
-cat <<EOF | tee /tmp/windows-setup.yml
+cat <<'EOF' | tee /tmp/windows-setup.yml
 ---
 - name: Push and execute windows-setup.ps1 on Windows
   hosts: windowssrv
