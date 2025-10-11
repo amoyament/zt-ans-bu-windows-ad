@@ -439,7 +439,9 @@ cat <<EOF | tee /tmp/controller-setup.yml
         name: "{{ lab_organization }}"
         description: "ACME Corp Organization"
         state: present
-        controller_oauthtoken: "{{ auth_token }}"
+        controller_host: "{{ controller_hostname }}"
+        controller_username: "{{ controller_admin_user }}"
+        controller_password: "{{ controller_admin_password }}"
         validate_certs: false
       tags:
         - controller-config
@@ -451,8 +453,9 @@ cat <<EOF | tee /tmp/controller-setup.yml
         image: "quay.io/nmartins/windows_ee"
         pull: missing
         state: present
-        controller_oauthtoken: "{{ auth_token }}"
         controller_host: "{{ controller_hostname }}"
+        controller_username: "{{ controller_admin_user }}"
+        controller_password: "{{ controller_admin_password }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
         - controller-config
@@ -464,8 +467,9 @@ cat <<EOF | tee /tmp/controller-setup.yml
         username: "{{ student_user }}"
         password: "{{ student_password }}"
         email: student@acme.example.com
-        controller_oauthtoken: "{{ auth_token }}"
         controller_host: "{{ controller_hostname }}"
+        controller_username: "{{ controller_admin_user }}"
+        controller_password: "{{ controller_admin_password }}"
         validate_certs: "{{ controller_validate_certs }}"
       tags:
         - controller-config
@@ -477,14 +481,20 @@ cat <<EOF | tee /tmp/controller-setup.yml
        description: "Our Server environment"
        organization: "ACME"
        state: present
-       controller_config_file: "/tmp/controller.cfg"
+       controller_host: "{{ controller_hostname }}"
+       controller_username: "{{ controller_admin_user }}"
+       controller_password: "{{ controller_admin_password }}"
+       validate_certs: false
 
     - name: Add host to inventory
       ansible.controller.host:
         name: "windows"
         inventory: "Servers" 
         state: present
-        controller_config_file: "/tmp/controller.cfg"
+        controller_host: "{{ controller_hostname }}"
+        controller_username: "{{ controller_admin_user }}"
+        controller_password: "{{ controller_admin_password }}"
+        validate_certs: false
 
     - name: Create group with extra vars
       ansible.controller.group:
@@ -498,7 +508,10 @@ cat <<EOF | tee /tmp/controller-setup.yml
           ansible_port: 5986
           ansible_winrm_server_cert_validation: ignore
           ansible_winrm_transport: credssp
-        controller_config_file: "/tmp/controller.cfg"
+        controller_host: "{{ controller_hostname }}"
+        controller_username: "{{ controller_admin_user }}"
+        controller_password: "{{ controller_admin_password }}"
+        validate_certs: false
       register: inv_group
  
     - name: Add machine credential
@@ -510,7 +523,10 @@ cat <<EOF | tee /tmp/controller-setup.yml
         username: Administrator
         password: ansible123!
        state: present
-       controller_config_file: "/tmp/controller.cfg"
+       controller_host: "{{ controller_hostname }}"
+       controller_username: "{{ controller_admin_user }}"
+       controller_password: "{{ controller_admin_password }}"
+       validate_certs: false
 
     - name: Add project
       ansible.controller.project:
@@ -523,7 +539,10 @@ cat <<EOF | tee /tmp/controller-setup.yml
        scm_clean: true
        scm_update_on_launch: true
        state: present
-       controller_config_file: "/tmp/controller.cfg"
+       controller_host: "{{ controller_hostname }}"
+       controller_username: "{{ controller_admin_user }}"
+       controller_password: "{{ controller_admin_password }}"
+       validate_certs: false
 
     # - name: Create IIS template
     #   ansible.controller.job_template:
