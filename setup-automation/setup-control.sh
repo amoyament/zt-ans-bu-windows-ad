@@ -414,9 +414,12 @@ cat <<EOF | tee /tmp/controller-setup.yml
       tags:
         - always
  
+    - name: Gather service facts
+      service_facts:
+
     - name: Ensure tower/controller is online and working
       uri:
-        url: https://localhost/api/v2/ping/
+        url: https://{{ controller_hostname }}/api/v2/ping/
         method: GET
         user: "{{ admin_username }}"
         password: "{{ admin_password }}"
@@ -426,6 +429,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
       until: controller_online is success
       delay: 3
       retries: 5
+      when: "automation-controller" in ansible_facts.services
       tags:
         - controller-config
 
