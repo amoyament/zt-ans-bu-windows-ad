@@ -5,14 +5,14 @@ if [ ! -f /home/rhel/.ssh/id_rsa ]; then
 fi
 nmcli connection add type ethernet con-name enp2s0 ifname enp2s0 ipv4.addresses 192.168.1.10/24 ipv4.method manual connection.autoconnect yes
 nmcli connection up enp2s0
-echo "192.168.1.10 control.lab control" >> /etc/hosts
+echo "192.168.1.10 control.lab control controller" >> /etc/hosts
 # echo "192.168.1.11 podman.lab podman" >> /etc/hosts
 
 # Create an inventory file for this environment
 tee /tmp/inventory << EOF
 
 [ctrlnodes]
-controller.acme.example.com ansible_host=controller ansible_user=rhel ansible_connection=local
+controller.acme.example.com ansible_host=control ansible_user=rhel ansible_connection=local
 
 [windowssrv]
 windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore
@@ -29,7 +29,7 @@ EOF
 cat <<EOF | tee /tmp/track-vars.yml
 ---
 # config vars
-controller_hostname: controller
+controller_hostname: control
 controller_validate_certs: false
 ansible_python_interpreter: /usr/bin/python3
 controller_ee: Windows_ee
@@ -169,17 +169,34 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
         include_management_tools: true
         state: present
 
-    - name: Download Edge MSI
-      ansible.windows.win_get_url:
-        url: https://go.microsoft.com/fwlink/?linkid=2109047
-        dest: C:\\Windows\\Temp\\MicrosoftEdgeEnterpriseX64.msi
-        force: true
+    - name: Install Chocolatey
+      ansible.windows.win_shell: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+      args:
+        executable: powershell.exe
 
-    - name: Install Microsoft Edge from MSI
-      ansible.windows.win_package:
-        path: C:\\Windows\\Temp\\MicrosoftEdgeEnterpriseX64.msi
-        arguments: /qn /norestart
-        state: present
+    - name: Execute slmgr /rearm (elevated)
+      ansible.windows.win_powershell:
+        script: slmgr /rearm
+      become: yes
+      become_method: runas
+      register: slmgr_result
+
+    - name: Reboot after Chocolatey/slmgr setup
+      ansible.windows.win_reboot:
+        msg: "Reboot to finalize Chocolatey/slmgr setup"
+        pre_reboot_delay: 5
+
+    - name: Install Microsoft Edge via Chocolatey (with retries)
+      ansible.windows.win_shell: choco install microsoft-edge -y --no-progress
+      args:
+        executable: powershell.exe
+      register: edge_install
+      retries: 3
+      delay: 20
+      until: edge_install.rc == 0
 
     - name: Verify Edge installed
       ansible.windows.win_stat:
@@ -188,7 +205,7 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
 
     - name: Fail if Edge not installed
       ansible.builtin.fail:
-        msg: 'Edge did not install; check installer logs on the VM'
+        msg: 'Edge did not install; check Chocolatey logs on the VM'
       when: not edge_bin.stat.exists
 EOF
 
