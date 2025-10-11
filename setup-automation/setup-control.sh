@@ -36,7 +36,7 @@ controller_ee: Windows_ee
 student_user: student
 student_password: learn_ansible
 controller_admin_user: admin
-controller_admin_password: "ansible123!"
+controller_admin_password: "Ansible123!"
 host_key_checking: false
 custom_facts_dir: "/etc/ansible/facts.d"
 custom_facts_file: custom_facts.fact
