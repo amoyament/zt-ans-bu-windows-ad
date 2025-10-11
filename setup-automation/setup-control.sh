@@ -41,7 +41,7 @@ host_key_checking: false
 custom_facts_dir: "/etc/ansible/facts.d"
 custom_facts_file: custom_facts.fact
 admin_username: admin
-admin_password: ansible123!
+admin_password: Ansible123!
 repo_user: rhel
 default_tag_name: "0.0.1"
 lab_organization: ACME
