@@ -135,19 +135,61 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
   hosts: windowssrv
   gather_facts: false
   tasks:
-    - name: Ensure setup directory exists
-      ansible.windows.win_file:
-        path: C:\\setup
-        state: directory
+    - name: Ensure IIS features are present
+      ansible.windows.win_feature:
+        name:
+          - Web-Server
+          - Web-Mgmt-Console
+        state: present
+        include_management_tools: true
 
-    - name: Copy windows-setup.ps1 from control host
+    - name: Create IIS landing page
       ansible.windows.win_copy:
-        src: /tmp/windows-setup.ps1
-        dest: C:\\setup\\windows-setup.ps1
+        dest: C:\\inetpub\\wwwroot\\index.html
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Windows AD Lab</title>
+          </head>
+          <body>
+              <h1>Windows AD Domain Controller</h1>
+              <p>This is the Windows AD domain controller for the lab.</p>
+          </body>
+          </html>
 
-    - name: Execute windows-setup.ps1
-      ansible.windows.win_shell: |
-        PowerShell -ExecutionPolicy Bypass -File C:\\setup\\windows-setup.ps1
+    - name: Create marker file on Public Desktop
+      ansible.windows.win_copy:
+        dest: C:\\Users\\Public\\Desktop\\MyFile.txt
+        content: 'Created by Ansible'
+
+    - name: Ensure AD DS feature is present
+      ansible.windows.win_feature:
+        name: AD-Domain-Services
+        include_management_tools: true
+        state: present
+
+    - name: Download Edge MSI
+      ansible.windows.win_get_url:
+        url: https://go.microsoft.com/fwlink/?linkid=2109047
+        dest: C:\\Windows\\Temp\\MicrosoftEdgeEnterpriseX64.msi
+        force: true
+
+    - name: Install Microsoft Edge from MSI
+      ansible.windows.win_package:
+        path: C:\\Windows\\Temp\\MicrosoftEdgeEnterpriseX64.msi
+        arguments: /qn /norestart
+        state: present
+
+    - name: Verify Edge installed
+      ansible.windows.win_stat:
+        path: C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe
+      register: edge_bin
+
+    - name: Fail if Edge not installed
+      ansible.builtin.fail:
+        msg: 'Edge did not install; check installer logs on the VM'
+      when: not edge_bin.stat.exists
 EOF
 
 echo "=== Running Windows configuration (PowerShell script) ==="
