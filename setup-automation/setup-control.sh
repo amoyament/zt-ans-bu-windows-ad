@@ -429,7 +429,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
       until: controller_online is success
       delay: 3
       retries: 5
-      when: "automation-controller" in ansible_facts.services
+      when: "'automation-controller' in ansible_facts.services"
       tags:
         - controller-config
 
