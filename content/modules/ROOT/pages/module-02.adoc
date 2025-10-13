@@ -1,121 +1,255 @@
-//= Module 02 — OU's, Users and Groups
+== Organization Managment
 
-== Organization Management
+We have created our controller, and we can now start to create objects users and groups on our domain.
 
-We have a controller configured; now we’ll create organizational units (OUs), groups, and users.
 
-== Organizational Units and Groups
+== ☑️ Organizational Units and Groups
+Active Directory allows us to create organizational units which mirror our functional buisness groups. In this exercise we are going to create a group for our Ansible users, however we are also going to create this group under its own OU in the Active Directory.
 
-.Open VS Code and edit the playbook
-* Open `create_ou_grp.yml` and include these tasks:
+Navigate to your `vscode` to start.
+
+Select the `create_ou_grp.yml` playbook. Edit the playbook for the following tasks.
+
 ----
-tasks:
-  - name: Create Organizational Unit
-    microsoft.ad.ou:
-      name: "{{ org_unit }}"
-      state: present
-      protect_from_deletion: true
+    tasks:
 
-  - name: Create a group in a OU
-    microsoft.ad.group:
-      name: "{{ group_name }}"
-      scope: global
-      path: OU="{{ org_unit }}",DC=instruqt,DC=ansible
-      state: present
-----
+     - name: Create Organizational Unit
+       microsoft.ad.ou:
+        name: "{{ org_unit }}"
+        state: present
+        protect_from_deletion: true
 
-.Configure Git and push
-----
-git config --global user.email "student@redhat.com"
-git config --global user.name "Student"
-git add *
-git commit -m "Updating the OU Playbook"
-git push
+     - name: Create a group in a OU
+       microsoft.ad.group:
+        name: "{{ group_name }}"
+        scope: global
+        path: OU="{{ org_unit }}",DC=instruqt,DC=ansible
+        state: present
 ----
 
-Use Gitea credentials when prompted:
-`student` / `learn_ansible`.
+The first task creates an organizational unit in the domain, while the secound creates a group within that OU. We can save this playbook and push it back to our repo.
 
-.Sync project and create template in Controller
-* menu:Resources[Projects] → sync `Active-Directory AAP`
-* menu:Resources[Templates] → btn:[Add] → Add Job Template:
-** Name: `Create OU and Groups`
-** Description: Creating OU and User group based on Business Units
-** Inventory: `Servers`
-** Project: `Active-Directory AAP`
-** Execution Environment: `Windows_ee`
-** Playbook: `create_ou_grp.yml`
-** Credentials: `Windows Host`
+Before we update our remote repo, we need to configure our git details:
 
-.Add a survey (two questions)
-* `org_unit` (Text): “Please define your Organization Unit (OU)”
-* `group_name` (Text): “Please define your Group for the OU”
-
-.Launch with example values
 ----
-Organizational Unit: Ansible
-Group Name: DevOps
+      git config --global user.email "student@redhat.com"
+      git config --global user.name "Student"
 ----
 
-Verify on the Windows VM via Server Manager → Tools → Active Directory Users and Computers.
+Next lets update the repo:
+
+----
+    git add *
+    git commit -m "Updating the OU Playbook"
+    git push
+----
+
+You will be asked to authenticate at the top of the vscode editor -
+
+image::git.png[GIT,link=self,window=_blank]
+
+Use the following credentials:
+
+----
+    Username: student
+    Password: learn_ansible
+----
+
+Once the repo has been updated, we can navigate to our `controller` to update the project and create a template.
+
+In your controller, navigate to *Resources* > *Projects*. You can click on the sync botton on the `Active-Directory AAP` project. This will grab the latest version of our playbooks.
+
+Next, navigate to *Resources* > *Templates* and select *Add* followed by *Add Job Template*.
+
+Create a template with the following details:
+
+----
+    Name: Create OU and Groups
+    Description: Creating OU and User group based on Buisness Units
+    Inventory: Servers
+    Project: Active-Directory AAP
+    Execution Environment: Windows_ee
+    Playbook: create_ou_grp.yml
+    Credentials: Windows Host
+----
+
+Save the template. Next we need to add a survey.
+
+image::survey.png[SURVEY,link=self,window=_blank]
+
+Select Survey on the right of the job template details page. Select *Add* and create the following survey question:
+
+----
+    Question: Please define your Organization Unit (OU)
+    Description: OU to be created on the domain
+    Answer variable name: org_unit
+    Answer Type: Text
+----
+
+Save this question and add the next:
+
+----
+    Question: Please define your Group for the OU
+    Description: Group for the OU to be created on the domain
+    Answer variable name: group_name
+    Answer Type: Text
+----
+
+Save, and enable the survey with the toggle. Navigate back to templates and click on the rocket on our `Create OU and Group` template. The survey will ask you for input, please provide the following:
+
+----
+    Organizational Unit = Ansible
+    Group Name= DevOps
+----
+
+Once the template is done, we can verify the changes on our domain controller. Navigate to the `windows` tab. *Start* > *Server Manager*, next select *tools* and *Active Directory Users and Computers*.
+
+image::tools.png[TOOL,link=self,window=_blank]
+
+If you drop down your instruqt.ansible domain, you should see your Ansible OU and the group inside it.
 
 image::ou.png[OU,link=self,window=_blank]
 
-== Creating domain users
 
-.Create admin users template
-* Template for `create_user.yml` with Job Tag `admin_user`:
-** Name: `Create Admin users`
-** Inventory: `Servers`
-** Project: `Active-Directory AAP`
-** Execution Environment: `Windows_ee`
-** Credentials: `Windows Host`
+== ☑️ Creating domain users
 
-.Add survey (three questions)
-* `user_identity` (Text): Identity (user login name)
-* `user_password` (Password)
-* `ou_path` (Text) — Default: `CN=Users,DC=instruqt,DC=ansible`
+We have our groups and OU created, we can create some users. Navigate back to you `vscode` and select the playbook `create_user.yml`. This playbook allows you to create users on the domain. However, these tasks add users into different groups, to control this we use `tags`.
 
-.Create Ansible users template
-* Copy the template and change Job Tag to `ansible_user`, Name: `Create Ansible users`.
+Navigate to `controller` and let us create a template to create admin users. Create the following template with the following details:
 
-.Run examples
 ----
-Admin:   Username=zerocool  Password=P@ssw0rd.123  Desired OU=CN=Users,DC=instruqt,DC=ansible
-Ansible: Username=acidburn  Password=P@ssw0rd.123  Desired OU=OU=Ansible,DC=instruqt,DC=ansible
+    Name: Create Admin users
+    Inventory: Servers
+    Project: Active-Directory AAP
+    Execution Environement: Windows_ee
+    Playbook: create_user.yml
+    Credentials: Windows Host
+    Job Tags: admin_user
 ----
 
-== Creating multiple users
+!!Note: When adding a Job Tag, you need to create the tag before you can allocate it.
 
-Open `lab_users.yml`. Users are defined as a dictionary; loop to create each one:
+image::admin-tag.png[admin,link=self,window=_blank]
+
+We need to add a survey again, so once this template is saved, navigate to Surveys and lets add the following three questions:
+
 ----
-- name: Create users for lab
-  microsoft.ad.user:
-    identity: "{{ item.key }}"
-    password: "{{ user_password }}"
-    firstname: "{{ item.value.firstname }}"
-    surname: "{{ item.value.surname }}"
-    state: present
-    path: "{{ ou_path }}"
-    groups:
-      set:
-        - Domain Users
-  loop: "{{ users_list | dict2items }}"
+    Question: Please define your user Identity (username)
+    Description: Identity (user login name)
+    Answer variable name: user_identity
+    Answer Type: Text
+
+    Question: Please define your password
+    Description: User Password
+    Answer variable name: user_password
+    Answer Type: password
+
+    Question: Please define your OU path
+    Description: Account to be associated to the OU
+    Answer variable name: ou_path
+    Answer Type: Text
+    Default Answer: CN=Users,DC=instruqt,DC=ansible
 ----
 
-.Push changes and sync project
+Save, and dont forget to enable the Survey!
+
+Next, lets create a job template specifically for the Ansible group we created. Navigate back to *Resources* > *Templates*. Select `copy template` to copy our *Create Admin users* template. Let's edit the copy with the following:
+
 ----
-git add *
-git commit -m "Updating the Lab Users"
-git push
+    Name: Create Ansible users
+    Inventory: Servers
+    Project: Active-Directory AAP
+    Execution Environement: Windows_ee
+    Playbook: create_user.yml
+    Credentials: Windows Host
+    Job Tags: ansible_user
 ----
 
-.Create template and launch
-** Name: `Create Ansible Lab users`
-** Inventory: `Servers`
-** Project: `Active-Directory AAP`
-** Execution Environment: `Windows_ee`
-** Playbook: `lab_users.yml`
-** Credentials: `Windows Host`
+Save the template.
 
-Verify results on the Windows VM.
+Great work so far!
+
+Navigate back to *Resources* > *Templates* and launch the `Create Admin users` template. Provide the following details:
+
+----
+    Username: zerocool
+    Password: P@ssw0rd.123
+    Desired OU: CN=Users,DC=instruqt,DC=ansible
+----
+
+Once succesful, let us navigate to our windows tab and verify the user has been created and is a member of the right groups.
+
+image::zero.png[ZeroCool,link=self,window=_blank]
+
+Navigate back to controller, Resources > Templates and launch the Create Ansible user template. Provide the following details:
+
+----
+    Username: acidburn
+    Password: P@ssw0rd.123
+    Desired OU: OU=Ansible,DC=instruqt,DC=ansible
+----
+
+Again, once complete verify on our Windows system.
+
+image::acid_burn.png[Acid,link=self,window=_blank]
+
+
+== ☑️ Creating multiple users
+
+Before moving to the last exercise, lets create a few extra users.
+Navigate to `vscode` and select the playbook `lab_users.yml`. This playbook defines to variables, one for the OU we want to use (OU=Ansible,DC=instruqt,DC=ansible) and the other is the user password which we will generate at random.
+
+If you have previously completed the Getting started with Windows automation lab, you would have done a similar exercise to create local accounts. This time we are using the Active Directory modules to create these users.
+
+We have defined users as a `dictionary` and we can then loop through those details to provide the AD more account information.  We can finish the playbook by adding a task to create users in a loop.
+
+----
+      - name: Create users for lab
+        microsoft.ad.user:
+         identity: "{{  item.key  }}"
+         password: "{{  user_password  }}"
+         firstname: "{{  item.value.firstname  }}"
+         surname: "{{  item.value.surname  }}"
+         state: present
+         path: "{{  ou_path  }}"
+         groups:
+          set:
+           - Domain Users
+        loop: "{{  users_list | dict2items  }}"
+----
+
+Save the playbook and lets push it to our repo again.
+
+----
+    git add *
+    git commit -m "Updating the Lab Users"
+    git push
+----
+
+Remember the git username and password:
+
+----
+    Username: student
+    Password: learn_ansible
+----
+
+Once we have saved this we can navigate to controller, we need to synchronise our project. Navigate to  *Resources* > *Project* and resync. Then lets create a new template with the following details:
+
+----
+    Name: Create Ansible Lab users
+    Inventory: Servers
+    Project: Active-Directory AAP
+    Execution Environement: Windows_ee
+    Playbook: lab_users.yml
+    Credentials: Windows Host
+----
+
+Once created save the template and launch it!
+
+We can verify our changes on our Active Directory
+
+image::ad_user.png[ADUser,link=self,window=_blank]
+
+Confirm the details are correct
+
+image::user.png[User,link=self,window=_blank]
