@@ -11,12 +11,14 @@ Our Windows server is currently in a default workgroup state. For this lab we ne
 
 Let us grab the repo:
 
+[,sh,role=execute]
 ----
 git clone http://gitea:3000/student/aap_activedirectory.git
 ----
 
 Now we nagivate in the explorer on the top left in vscode and you should have your local repo `aap_activedirectory` . Select the playbook ad_promote.yml in your local repo
 
+[,yaml]
 ----
 ---
 -
@@ -50,10 +52,11 @@ Now we nagivate in the explorer on the top left in vscode and you should have yo
 
 This playbook uses two certified collections: `ansible.windows` and `microsoft.ad`. In this playbook we reset the local Administrator account password and we then promote the system to a domain controller.
 
-Its important to note that we are not showing our credentials in this playbook but we are grabbing them from an ansible-vault which is encrypted. This vault is called windows_auth.
+NOTE: Its important to note that we are not showing our credentials in this playbook but we are grabbing them from an ansible-vault which is encrypted. This vault is called windows_auth.
 
 In your terminal window we can view the contents of the vault:
 
+[,sh,role=execute]
 ----
 cd aap_activedirectory/
 ansible-vault view windows_auth
@@ -73,6 +76,7 @@ safe_password: P@ssw0rd.123
 
 Now that we have had a look at the playbook and the vault, let us configure this playbook as a template in our controller. Navigate to the controller tab and login.
 
+[,text]
 ----
 Username: student
 Password: learn_ansible
@@ -81,6 +85,7 @@ Password: learn_ansible
 Navigate to *Credentials*. We will need to create a credential to open our vault.
 Select *Add*, and fill in the following details
 
+[,text]
 ----
 Name: Windows Vault
 Description: Key to open windows authentication vault
@@ -92,6 +97,7 @@ Vault Identifier:
 
 Save and navigate to *Resources* > *Templates*, select *Add* and choose *add Job Template*. Create a template with the following details:
 
+[,text]
 ----
 Name: Promote Server to Domain Controller
 Inventory: Servers
@@ -111,10 +117,10 @@ The system will be promoted and the system will be rebooted. Our `ansible.window
 
 We can confirm this by navigating to the `windows` tab. You will be asked to reconnect to the system.
 
-image::reconnect.png[CONNECT,link=self,window=_blank]
+image::reconnect.png[CONNECT,link=self,window=_blank,width=60%]
 
 Once logged in you can naviate to *Server Manager* and confirm.
 
-image::serverman.png[SRVMAN,link=self,window=_blank]
+image::serverman.png[SRVMAN,link=self,window=_blank,width=60%]
 
-image::ad.png[AD,link=self,window=_blank]
+image::ad.png[AD,link=self,window=_blank,width=60%]

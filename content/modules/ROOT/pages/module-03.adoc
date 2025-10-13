@@ -10,6 +10,7 @@ Ansible has a number of modules for Windows and for Active Directory however we 
 
 In this exercise we are going to gather infromation from the Active Directory and use it to create a html page. Its important to note that we have a module to do this, but we want to use Powershell as an example for this instance. Navigate to `vscode` and open the `user_info.yml` playbook. In this playbook we are using the win_shell module to execute some PowerShell. We can then use the output with our traditional Ansible modules.
 
+[,yaml]
 ----
 ---
 - name: Get AD Users and create HTML report
@@ -37,6 +38,7 @@ The second part of the playbook is to create a html page using a jinja template 
 
 Let's create a template for this so long. Create a template back on controller with the following details:
 
+[,text]
 ----
     Name: User Data Report
     Inventory: Servers
@@ -54,6 +56,7 @@ Now, we want to grab some data from out Active Directory and create a html repor
 
 Navigate to *Resources* > *Templates* and select *Add*, but this time select *Add Workflow Template*. Workflows give us the ability to string automation together and orchestrate different templates. Use the following when creating the workflow:
 
+[,text]
 ----
     Name: AD User Data Report
     Inventory: Servers
@@ -67,6 +70,8 @@ image::approval.png[APPROVAL,link=self,window=_blank]
 
 Use the following for the approval:
 
+NOTE: 
+[,text]
 ----
     Name: Are you sure you want to access Active Directory account data ?
 ----
@@ -92,7 +97,7 @@ We can navigate to *Views* > *Jobs* to see the User Data Report job execute. Onc
 
 On the Windows system we can navigate to *C: > Sites > ad_report* and open the `user_info.html` file.
 
-image::report.png[Report,link=self,window=_blank]
+image::report.png[Report,link=self,window=_blank,width=60%]
 
 
 
