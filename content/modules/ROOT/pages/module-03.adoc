@@ -1,1 +1,63 @@
-// ################################################ UPDATE ME, PLEASE! ################################################
+//= Module 03 — Just a dash of PowerShell
+
+== Interacting with Active Directory
+
+Apart from creating objects and resetting passwords, we can use Ansible to interact with AD and generate reports.
+
+== PowerShell in Ansible
+
+Open `user_info.yml` in VS Code. This playbook gathers user info with PowerShell and renders an HTML report from a Jinja template.
+
+Example:
+----
+---
+- name: Get AD Users and create HTML report
+  hosts: windows
+  gather_facts: false
+  tasks:
+    - name: Get AD user accounts with groups and lock status
+      ansible.windows.win_shell: |
+        Import-Module ActiveDirectory
+        Get-ADUser -Filter * -Property DisplayName, EmailAddress, SamAccountName, MemberOf, LockedOut |
+        Select-Object DisplayName, EmailAddress, SamAccountName, @{Name="Groups";Expression={(Get-ADUser -Identity $_.SamAccountName -Property MemberOf | Select-Object -ExpandProperty MemberOf | Get-ADGroup | Select-Object -ExpandProperty Name) -join ", "}}, LockedOut |
+        ConvertTo-Json
+      register: ad_users
+
+    - name: Create HTML file from template
+      ansible.windows.win_template:
+        src: templates/users_template.html.j2
+        dest: /user_report.html
+      vars:
+        users: "{{ ad_users.stdout | from_json }}"
+----
+
+Create a Job Template in Controller:
+* Name: `User Data Report`
+* Inventory: `Servers`
+* Project: `Active-Directory AAP`
+* Execution Environment: `Windows_ee`
+* Playbook: `user_info.yml`
+* Credentials: `Windows Host`
+
+== Create the workflow
+
+Make a simple workflow with an approval gate, then run the user report.
+
+.Workflow Template
+* Name: `AD User Data Report`
+* Inventory: `Servers`
+
+.Add nodes
+* Start → Node Type: Approval
+* Approval Name: “Are you sure you want to access Active Directory account data ?”
+* On success → add template: `User Data Report`
+
+The workflow diagram should reflect an Approval followed by the report template.
+
+Launch the workflow. Approve when prompted, then watch Jobs. On success, the report is on the Windows host at:
+
+`C:\\Sites\\ad_report\\user_info.html`
+
+image::../assets/report.png[Report]
+
+You should see account details from your Active Directory. Congrats!

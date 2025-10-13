@@ -1,1 +1,99 @@
-// ################################################ UPDATE ME, PLEASE! ################################################
+//= Module 01 — Promoting our machine
+
+Welcome!
+
+This lab focuses on using Ansible to automate Active Directory tasks. If this is your first Windows automation lab, consider completing the “Getting Started with Windows Automation” lab first.
+
+== Promoting a Windows Server
+
+Our Windows server is currently in a default workgroup state. First, promote it to a domain controller.
+
+.Open VS Code terminal
+* In the `vscode` tab, open menu:Terminal[New Terminal].
+
+.Clone the repository
+----
+git clone http://gitea:3000/student/aap_activedirectory.git
+----
+
+.Open the playbook
+* In the Explorer, open `aap_activedirectory/ad_promote.yml`:
+----
+---
+- name: Configure Windows Server as Domain Controller
+  hosts: windows
+  gather_facts: false
+
+  vars_files:
+    - windows_auth
+
+  tasks:
+    - name: Ensure local Administrator account has a password
+      ansible.windows.win_user:
+        name: "{{ username }}"
+        password: "{{ user_password }}"
+
+    - name: Promote system to a domain Controller
+      microsoft.ad.domain:
+        dns_domain_name: instruqt.ansible
+        safe_mode_password: "{{ safe_password }}"
+        domain_mode: Win2012R2
+        domain_netbios_name: ANSIBLE
+        forest_mode: Win2012R2
+      register: domain_install
+
+    - name: Reboot system after promoting to domain Controller
+      ansible.windows.win_reboot:
+      when: domain_install.reboot_required
+----
+
+This playbook uses two certified collections: `ansible.windows` and `microsoft.ad`. It resets the local Administrator password and promotes the system to a domain controller.
+
+NOTE: Credentials are stored in an encrypted Ansible Vault file `windows_auth`.
+
+.View the vault
+----
+cd aap_activedirectory/
+ansible-vault view windows_auth
+----
+
+When prompted, use the vault password: `ansible`. Expected contents:
+----
+username: Administrator
+user_password: P@ssw0rd.123
+safe_password: P@ssw0rd.123
+----
+
+== Create the template and execute
+
+.Log in to Controller
+* Username: `student`
+* Password: `learn_ansible`
+
+.Create a Vault credential
+* Navigate to menu:Resources[Credentials] → btn:[Add]
+* Fill in:
+** Name: `Windows Vault`
+** Description: Key to open windows authentication vault
+** Organization: `Default`
+** Credential Type: `Vault`
+** Vault Password: `ansible`
+
+.Create a Job Template
+* Navigate to menu:Resources[Templates] → btn:[Add] → Add Job Template
+* Use:
+** Name: `Promote Server to Domain Controller`
+** Inventory: `Servers`
+** Project: `Active-Directory AAP`
+** Execution Environment: `Windows_ee`
+** Playbook: `ad_promote.yml`
+** Credentials: `Windows Host`, `Windows Vault`
+
+.Launch the template
+* The system will be promoted and rebooted automatically via `win_reboot`.
+
+After completion, confirm on the Windows VM (you may need to reconnect):
+
+image::../assets/serverman.png[Server Manager]
+
+image::../assets/ad.png[Active Directory]

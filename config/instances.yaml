@@ -1,4 +1,3 @@
-################################################ UPDATE ME, PLEASE! ################################################
 ---
 # Containers are under development
 containers:
@@ -19,7 +18,9 @@ containers:
       GITEA__repository__ENABLE_PUSH_CREATE_USER: "true"
       GITEA__repository__ONLY_ALLOW_PUSH_IF_GITEA_ENVIRONMENT_SET: "false"
       GITEA__security__INSTALL_LOCK: "true"
-      GITEA__server__SSH_DOMAIN: http://gitea
+      GITEA__server__DOMAIN: gitea
+      GITEA__server__ROOT_URL: http://gitea:3000/
+      GITEA__server__SSH_DOMAIN: gitea
       GITEA__service__DISABLE_REGISTRATION: "true"
       GITEA__service__REQUIRE_SIGNIN_VIEW: "false"
       GITEA__webhook__ALLOWED_HOST_LIST: '*'
@@ -29,7 +30,7 @@ containers:
       - name: gitea-data
         mountPath: /data/
       - name: gitea-etc
-        mountPath: /etc/gitea
+        mountPath: /etc/gitea/
     volumes:
       - name: gitea-data
         emptyDir: {}
@@ -39,17 +40,9 @@ containers:
         emptyDir: {}
     commands: 
         - gitea admin user create --admin --username gitea --password gitea --email dummy@dummy.com --must-change-password=false
-        - gitea admin user create --username student --password learn_ansible --email student@dummy.com --must-change-password=false
-        - >
-          curl -X POST -H "accept: application/json" -H "Content-Type: application/json"
-          -u 'gitea:gitea' 
-          -d '{"username": "student", "full_name": "student", "description": "student"}'
-          http://localhost:3000/api/v1/orgs
-        - >
-          curl -X POST -H "accept: application/json" -H "Content-Type: application/json"
-          -u 'gitea:gitea'
-          -d '{"clone_addr": "https://github.com/nmartins0611/aap_and_activedirectory.git", "repo_name": "aap_activedirectory", "owner": "student", "uid": 2, "private": false}'
-          http://localhost:3000/api/v1/repos/migrate
+        - sleep 10
+        - gitea admin user create --admin --username student --password learn_ansible --must-change-password=false --email student@redhat.com
+        - sleep 10
     memory: 2Gi
     services:
       - name: gitea
@@ -174,20 +167,26 @@ virtualmachines:
       runcmd:
         - echo "PasswordAuthentication yes" > /etc/ssh/sshd_config.d/50-cloud-init.conf
         - systemctl reload sshd
-        tls_termination: Edge
 
   - name: "windows"
     image: "base-windows-ad-2022.qcow2"
     memory: "32G"
-    cores: 32
-    image_size: "65Gi"
+    cores: 4
+    image_size: "60Gi"
     tags:
       - key: "AnsibleGroup"
         value: "isolated"
     interface_model: "e1000e"
     networks:
       - default
-      - secondary
+    userdata: |-
+      #ps1
+      $ErrorActionPreference = 'Stop'
+      Set-ExecutionPolicy Bypass -Scope Process -Force
+      Start-Transcript -Path 'C:\Windows\Temp\userdata-transcript.txt' -Append
+      'Userdata OK' | Out-File 'C:\Windows\Temp\userdata-ok.txt' -Encoding UTF8
+      'Userdata OK' | Out-File 'C:\userdata-ok.txt' -Encoding UTF8
+      Stop-Transcript
     services:
       - name: windows
         ports:
@@ -214,4 +213,3 @@ virtualmachines:
         service: iis
         targetPort: 80
         tls: true
-        tls_termination: Edge

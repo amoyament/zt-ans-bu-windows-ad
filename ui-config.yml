@@ -26,6 +26,6 @@ tabs:
     url: https://vscode-${guid}.${domain}
     external: false
   - name: Gitea
-    url: https://podman-gitea-${guid}.${domain}/
+    url: https://gitea-${guid}.${domain}/
     modules:
       - module-01

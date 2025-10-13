@@ -1,5 +1,4 @@
 ################################################ UPDATE ME, PLEASE! ################################################ 
-# File sourced from zt-ans-bu-windows90
 
 #!/bin/bash
 curl -k  -L https://${SATELLITE_URL}/pub/katello-server-ca.crt -o /etc/pki/ca-trust/source/anchors/${SATELLITE_URL}.ca.crt
@@ -47,4 +46,4 @@ GALAXY_BIN="/usr/bin/ansible-galaxy"
 
 # Create collections dir and install Windows collections for rhel user
 sudo -u rhel mkdir -p /home/rhel/.ansible/collections
-sudo -u rhel "$GALAXY_BIN" collection install -p /home/rhel/.ansible/collections ansible.windows community.windows || true
+sudo -u rhel "$GALAXY_BIN" collection install -p /home/rhel/.ansible/collections ansible.windows community.windows microsoft.ad || true

@@ -1,1 +1,121 @@
-// ################################################ UPDATE ME, PLEASE! ################################################
+//= Module 02 — OU's, Users and Groups
+
+== Organization Management
+
+We have a controller configured; now we’ll create organizational units (OUs), groups, and users.
+
+== Organizational Units and Groups
+
+.Open VS Code and edit the playbook
+* Open `create_ou_grp.yml` and include these tasks:
+----
+tasks:
+  - name: Create Organizational Unit
+    microsoft.ad.ou:
+      name: "{{ org_unit }}"
+      state: present
+      protect_from_deletion: true
+
+  - name: Create a group in a OU
+    microsoft.ad.group:
+      name: "{{ group_name }}"
+      scope: global
+      path: OU="{{ org_unit }}",DC=instruqt,DC=ansible
+      state: present
+----
+
+.Configure Git and push
+----
+git config --global user.email "student@redhat.com"
+git config --global user.name "Student"
+git add *
+git commit -m "Updating the OU Playbook"
+git push
+----
+
+Use Gitea credentials when prompted:
+`student` / `learn_ansible`.
+
+.Sync project and create template in Controller
+* menu:Resources[Projects] → sync `Active-Directory AAP`
+* menu:Resources[Templates] → btn:[Add] → Add Job Template:
+** Name: `Create OU and Groups`
+** Description: Creating OU and User group based on Business Units
+** Inventory: `Servers`
+** Project: `Active-Directory AAP`
+** Execution Environment: `Windows_ee`
+** Playbook: `create_ou_grp.yml`
+** Credentials: `Windows Host`
+
+.Add a survey (two questions)
+* `org_unit` (Text): “Please define your Organization Unit (OU)”
+* `group_name` (Text): “Please define your Group for the OU”
+
+.Launch with example values
+----
+Organizational Unit: Ansible
+Group Name: DevOps
+----
+
+Verify on the Windows VM via Server Manager → Tools → Active Directory Users and Computers.
+
+image::../assets/ou.png[OU]
+
+== Creating domain users
+
+.Create admin users template
+* Template for `create_user.yml` with Job Tag `admin_user`:
+** Name: `Create Admin users`
+** Inventory: `Servers`
+** Project: `Active-Directory AAP`
+** Execution Environment: `Windows_ee`
+** Credentials: `Windows Host`
+
+.Add survey (three questions)
+* `user_identity` (Text): Identity (user login name)
+* `user_password` (Password)
+* `ou_path` (Text) — Default: `CN=Users,DC=instruqt,DC=ansible`
+
+.Create Ansible users template
+* Copy the template and change Job Tag to `ansible_user`, Name: `Create Ansible users`.
+
+.Run examples
+----
+Admin:   Username=zerocool  Password=P@ssw0rd.123  Desired OU=CN=Users,DC=instruqt,DC=ansible
+Ansible: Username=acidburn  Password=P@ssw0rd.123  Desired OU=OU=Ansible,DC=instruqt,DC=ansible
+----
+
+== Creating multiple users
+
+Open `lab_users.yml`. Users are defined as a dictionary; loop to create each one:
+----
+- name: Create users for lab
+  microsoft.ad.user:
+    identity: "{{ item.key }}"
+    password: "{{ user_password }}"
+    firstname: "{{ item.value.firstname }}"
+    surname: "{{ item.value.surname }}"
+    state: present
+    path: "{{ ou_path }}"
+    groups:
+      set:
+        - Domain Users
+  loop: "{{ users_list | dict2items }}"
+----
+
+.Push changes and sync project
+----
+git add *
+git commit -m "Updating the Lab Users"
+git push
+----
+
+.Create template and launch
+** Name: `Create Ansible Lab users`
+** Inventory: `Servers`
+** Project: `Active-Directory AAP`
+** Execution Environment: `Windows_ee`
+** Playbook: `lab_users.yml`
+** Credentials: `Windows Host`
+
+Verify results on the Windows VM.
