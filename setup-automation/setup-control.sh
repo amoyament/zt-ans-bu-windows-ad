@@ -434,12 +434,32 @@ cat <<EOF | tee /tmp/controller-setup.yml
         - controller-config
 
 # Controller objects
+    - name: Check controller user
+      uri:
+        url: https://{{ controller_hostname }}/api/v2/me/
+        method: GET
+        user: "{{ controller_admin_user }}"
+        password: "{{ controller_admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: me
+      when: "'automation-controller' in ansible_facts.services"
+      tags:
+        - controller-config
+
+    - name: Fail if not superuser
+      ansible.builtin.fail:
+        msg: "Controller user lacks superuser; cannot create org."
+      when: not (me.json.is_superuser | default(false))
+      tags:
+        - controller-config
+
     - name: Add Organization
       ansible.controller.organization:
         name: "{{ lab_organization }}"
         description: "ACME Corp Organization"
         state: present
-        controller_host: "{{ controller_hostname }}"
+        controller_host: "https://{{ controller_hostname }}"
         controller_username: "{{ controller_admin_user }}"
         controller_password: "{{ controller_admin_password }}"
         validate_certs: false
@@ -467,7 +487,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
         username: "{{ student_user }}"
         password: "{{ student_password }}"
         email: student@acme.example.com
-        controller_host: "{{ controller_hostname }}"
+        controller_host: "https://{{ controller_hostname }}"
         controller_username: "{{ controller_admin_user }}"
         controller_password: "{{ controller_admin_password }}"
         validate_certs: "{{ controller_validate_certs }}"
