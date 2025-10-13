@@ -58,6 +58,6 @@ Launch the workflow. Approve when prompted, then watch Jobs. On success, the rep
 
 `C:\\Sites\\ad_report\\user_info.html`
 
-image::../assets/report.png[Report]
+image::../assets/report.png[Report,link=self,window=_blank]
 
 You should see account details from your Active Directory. Congrats!

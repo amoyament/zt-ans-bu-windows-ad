@@ -59,7 +59,7 @@ Group Name: DevOps
 
 Verify on the Windows VM via Server Manager → Tools → Active Directory Users and Computers.
 
-image::../assets/ou.png[OU]
+image::../assets/ou.png[OU,link=self,window=_blank]
 
 == Creating domain users
 
