@@ -29,7 +29,7 @@ EOF
 cat <<EOF | tee /tmp/track-vars.yml
 ---
 # config vars
-controller_hostname: control
+controller_hostname: localhost
 controller_validate_certs: false
 ansible_python_interpreter: /usr/bin/python3
 controller_ee: Windows_ee
@@ -315,7 +315,7 @@ EOF
 cat <<EOF | tee /tmp/controller-setup.yml
 ## Controller setup
 - name: Controller config for Windows Getting Started
-  hosts: controller.acme.example.com
+  hosts: localhost
   gather_facts: true
     
   tasks:
@@ -330,7 +330,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
 #             description: 'Instruqt lab'
 #             scope: "write"
 #             state: present
-#             controller_host: controller
+#             controller_host: "https://localhost"
 #             controller_username: "{{ controller_admin_user }}"
 #             controller_password: "{{ controller_admin_password }}"
 #             validate_certs: false
@@ -419,7 +419,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
 
 #     - name: Ensure tower/controller is online and working
 #       uri:
-#         url: https://{{ controller_hostname }}/api/v2/ping/
+#         url: https://{{ localhost }}/api/v2/ping/
 #         method: GET
 #         user: "{{ admin_username }}"
 #         password: "{{ admin_password }}"
@@ -436,7 +436,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
 # # Controller objects
 #     - name: Check controller user
 #       uri:
-#         url: https://{{ controller_hostname }}/api/v2/me/
+#         url: https://{{ localhost }}/api/v2/me/
 #         method: GET
 #         user: "{{ controller_admin_user }}"
 #         password: "{{ controller_admin_password }}"
@@ -463,7 +463,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
     #     name: "{{ lab_organization }}"
     #     description: "ACME Corp Organization"
     #     state: present
-    #     controller_host: "https://{{ controller_hostname }}"
+    #     controller_host: "https://{{ localhost }}"
     #     controller_username: "{{ controller_admin_user }}"
     #     controller_password: "{{ controller_admin_password }}"
     #     validate_certs: false
@@ -477,7 +477,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
         image: "quay.io/nmartins/windows_ee"
         pull: missing
         state: present
-        controller_host: "{{ controller_hostname }}"
+        controller_host: "https://localhost"
         controller_username: "{{ controller_admin_user }}"
         controller_password: "{{ controller_admin_password }}"
         validate_certs: "{{ controller_validate_certs }}"
@@ -491,7 +491,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
     #     username: "{{ student_user }}"
     #     password: "{{ student_password }}"
     #     email: student@acme.example.com
-    #     controller_host: "https://{{ controller_hostname }}"
+    #     controller_host: "https://{{ localhost }}"
     #     controller_username: "{{ controller_admin_user }}"
     #     controller_password: "{{ controller_admin_password }}"
     #     validate_certs: "{{ controller_validate_certs }}"
@@ -503,19 +503,32 @@ cat <<EOF | tee /tmp/controller-setup.yml
       ansible.controller.inventory:
        name: "Servers"
        description: "Our Server environment"
-       organization: "ACME"
+       organization: Default
        state: present
-       controller_host: "{{ controller_hostname }}"
+       controller_host: "https://localhost"
        controller_username: "{{ controller_admin_user }}"
        controller_password: "{{ controller_admin_password }}"
        validate_certs: false
+
+  # - name: add rhel machine credential
+    # ansible.controller.credential:
+    #   name: 'rhel credential'
+    #   organization: Default
+    #   credential_type: Machine
+    #   controller_host: "https://localhost"
+    #   controller_username: admin
+    #   controller_password: ansible123!
+    #   validate_certs: false
+    #   inputs:
+    #     username: rhel
+    #     password: ansible123!
 
     - name: Add host to inventory
       ansible.controller.host:
         name: "windows"
         inventory: "Servers" 
         state: present
-        controller_host: "{{ controller_hostname }}"
+        controller_host: "https://localhost"
         controller_username: "{{ controller_admin_user }}"
         controller_password: "{{ controller_admin_password }}"
         validate_certs: false
@@ -532,7 +545,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
           ansible_port: 5986
           ansible_winrm_server_cert_validation: ignore
           ansible_winrm_transport: credssp
-        controller_host: "{{ controller_hostname }}"
+        controller_host: "https://localhost"
         controller_username: "{{ controller_admin_user }}"
         controller_password: "{{ controller_admin_password }}"
         validate_certs: false
@@ -547,7 +560,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
         username: Administrator
         password: ansible123!
        state: present
-       controller_host: "{{ controller_hostname }}"
+       controller_host: "https://localhost"
        controller_username: "{{ controller_admin_user }}"
        controller_password: "{{ controller_admin_password }}"
        validate_certs: false
@@ -563,7 +576,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
        scm_clean: true
        scm_update_on_launch: true
        state: present
-       controller_host: "{{ controller_hostname }}"
+       controller_host: "https://localhost"
        controller_username: "{{ controller_admin_user }}"
        controller_password: "{{ controller_admin_password }}"
        validate_certs: false
