@@ -94,6 +94,6 @@ safe_password: P@ssw0rd.123
 
 After completion, confirm on the Windows VM (you may need to reconnect):
 
-image::../assets/serverman.png[Server Manager,link=self,window=_blank]
+image::serverman.png[Server Manager,link=self,window=_blank]
 
-image::../assets/ad.png[Active Directory,link=self,window=_blank]
+image::ad.png[Active Directory,link=self,window=_blank]
