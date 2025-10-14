@@ -21,33 +21,32 @@ Now we nagivate in the explorer on the top left in vscode and you should have yo
 [,yaml]
 ----
 ---
--
- name: Configure Windows Server as Domain Controller
- hosts: windows
- gather_facts: false
+- name: Configure Windows Server as Domain Controller
+  hosts: windows
+  gather_facts: false
 
- vars_files:
-  - windows_auth
+  vars_files:
+    - windows_auth
 
- tasks:
+  tasks:
+    - name: Ensure local Administrator account has a password
+      ansible.windows.win_user:
+        name: "{{ username }}"
+        password: "{{ user_password }}"
 
-  - name: Ensure local Administrator account has a password
-    ansible.windows.win_user:
-     name: "{{ username }}"
-     password: "{{ user_password }}"
+    - name: Promote system to a domain Controller
+      microsoft.ad.domain:
+        dns_domain_name: instruqt.ansible
+        safe_mode_password: "{{ safe_password }}"
+        domain_mode: Win2012R2
+        domain_netbios_name: ANSIBLE
+        forest_mode: Win2012R2
+      register: domain_install
 
-  - name: Promote system to a domain Controller
-    microsoft.ad.domain:
-     dns_domain_name: instruqt.ansible
-     safe_mode_password: "{{ safe_password }}"
-     domain_mode: Win2012R2
-     domain_netbios_name: ANSIBLE
-     forest_mode: Win2012R2
-    register: domain_install
+    - name: Reboot system after promoting to domain Controller
+      ansible.windows.win_reboot:
+      when: domain_install.reboot_required
 
-  - name: Reboot system after promoting to domain Controller
-    ansible.windows.win_reboot:
-    when: domain_install.reboot_required
 ----
 
 This playbook uses two certified collections: `ansible.windows` and `microsoft.ad`. In this playbook we reset the local Administrator account password and we then promote the system to a domain controller.
@@ -74,7 +73,7 @@ safe_password: Ansible123!
 
 == ☑️ Create the template and execute
 
-Now that we have had a look at the playbook and the vault, let us configure this playbook as a template in our controller. Navigate to the controller tab and login.
+Now that we have had a look at the playbook and the vault, let us configure this playbook as a template in AAP. Navigate to the AAP tab and login.
 
 [,text]
 ----
@@ -105,8 +104,8 @@ Create a template with the following details:
 Name: Promote Server to Domain Controller
 Inventory: Servers
 Project: Active-Directory AAP
-Execution Environement: Windows_ee
 Playbook: ad_promote.yml
+Execution Environement: Windows_ee
 Credentials: Windows Host & Windows Vault
 ----
 
@@ -118,12 +117,12 @@ We will be waiting for a few minutes as the system reboots...
 
 The system will be promoted and the system will be rebooted. Our `ansible.windows.win_reboot` module allows for the system to reboot and we wait for it to come back up. Congratulations we have a new domain controller!
 
-We can confirm this by navigating to the `windows` tab. You will be asked to reconnect to the system.
+We can confirm this by navigating to the `windows` tab. After a few moments, you will see the system rebooting.
 
-image::reconnect.png[CONNECT,link=self,window=_blank,width=60%]
+image::reconnect.png[RECONNECT,link=self,window=_blank,width=60%]
 
 Once logged in you can naviate to *Server Manager* and confirm.
 
-image::serverman.png[SRVMAN,link=self,window=_blank,width=60%]
+image::serverman.png[SERVER MANAGER,link=self,window=_blank,width=60%]
 
-image::ad.png[AD,link=self,window=_blank,width=60%]
+image::ad.png[ACTIVE DIRECTORY,link=self,window=_blank,width=60%]
