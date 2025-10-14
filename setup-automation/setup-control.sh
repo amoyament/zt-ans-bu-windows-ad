@@ -183,7 +183,6 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       become: yes
       become_method: runas
       become_user: Administrator
-      become_password: "{{ ansible_password }}"
       register: slmgr_result
 
     - name: Reboot after Chocolatey/slmgr setup
