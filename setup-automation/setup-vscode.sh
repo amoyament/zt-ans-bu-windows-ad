@@ -22,10 +22,19 @@ systemctl stop code-server || true
 [ -f /home/rhel/.config/code-server/config.yaml ] && \
   mv /home/rhel/.config/code-server/config.yaml /home/rhel/.config/code-server/config.bk.yaml || true
 
+
+# This is the updated configuration block
 tee /home/rhel/.config/code-server/config.yaml << EOF
 bind-addr: 0.0.0.0:8080
 auth: none
 cert: false
+# --- Start of new lines ---
+# The following headers relax security to allow embedding in an iframe,
+# which is necessary for clipboard (copy/paste) to work in the Antora lab.
+headers:
+  content-security-policy: ""
+  x-frame-options: ""
+# --- End of new lines ---
 EOF
 
 systemctl start code-server || true
