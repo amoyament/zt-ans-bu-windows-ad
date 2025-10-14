@@ -1,5 +1,3 @@
-################################################ UPDATE ME, PLEASE! ################################################ 
-
 #!/bin/bash
 curl -k  -L https://${SATELLITE_URL}/pub/katello-server-ca.crt -o /etc/pki/ca-trust/source/anchors/${SATELLITE_URL}.ca.crt
 update-ca-trust
@@ -18,37 +16,22 @@ fi
 sudo -u rhel chmod 600 /home/rhel/.ssh/id_rsa*
 
 systemctl stop firewalld
-# Stop any running code-server instances (both legacy and templated units)
-systemctl stop code-server@rhel || true
 systemctl stop code-server || true
 [ -f /home/rhel/.config/code-server/config.yaml ] && \
   mv /home/rhel/.config/code-server/config.yaml /home/rhel/.config/code-server/config.bk.yaml || true
 
 
-# Ensure config directory and ownership
-mkdir -p /home/rhel/.config/code-server
-chown -R rhel:rhel /home/rhel/.config
-
-# Write headers JSON file that code-server can consume via http-headers
-tee /home/rhel/.config/code-server/headers.json << EOF
-{
-  "content-security-policy": "",
-  "x-frame-options": ""
-}
-EOF
-chown rhel:rhel /home/rhel/.config/code-server/headers.json
-
-# code-server configuration
+# This is the updated configuration block
 tee /home/rhel/.config/code-server/config.yaml << EOF
 bind-addr: 0.0.0.0:8080
 auth: none
 cert: false
-http-headers: /home/rhel/.config/code-server/headers.json
+headers:
+  content-security-policy: ""
+  x-frame-options: ""
 EOF
-chown rhel:rhel /home/rhel/.config/code-server/config.yaml
 
-# Enable and start the templated unit for user rhel
-systemctl enable --now code-server@rhel || true
+systemctl start code-server || true
 dnf install -y unzip nano git podman ansible-core python3-pip || true
 
 # Ensure ansible-galaxy exists; if not, install ansible-core via pip
