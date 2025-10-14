@@ -20,15 +20,10 @@ systemctl stop code-server || true
 [ -f /home/rhel/.config/code-server/config.yaml ] && \
   mv /home/rhel/.config/code-server/config.yaml /home/rhel/.config/code-server/config.bk.yaml || true
 
-
-# This is the updated configuration block
 tee /home/rhel/.config/code-server/config.yaml << EOF
 bind-addr: 0.0.0.0:8080
 auth: none
 cert: false
-headers:
-  content-security-policy: ""
-  x-frame-options: ""
 EOF
 
 systemctl start code-server || true
