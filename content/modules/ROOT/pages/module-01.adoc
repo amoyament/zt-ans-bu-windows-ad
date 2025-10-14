@@ -116,7 +116,7 @@ Save the template and we can launch it!
 
 We will be waiting for a few minutes as the system reboots...
 
-The system will be promoted and the system will be rebooted. Our `ansible.windows.win_reboot` module allows for the system to reboot and we wait for it to come back up. Congratulations we have a new domain controller.
+The system will be promoted and the system will be rebooted. Our `ansible.windows.win_reboot` module allows for the system to reboot and we wait for it to come back up. Congratulations we have a new domain controller!
 
 We can confirm this by navigating to the `windows` tab. You will be asked to reconnect to the system.
 
