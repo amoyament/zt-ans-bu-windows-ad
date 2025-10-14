@@ -36,7 +36,7 @@ Now we nagivate in the explorer on the top left in vscode and you should have yo
 
     - name: Promote system to a domain Controller
       microsoft.ad.domain:
-        dns_domain_name: instruqt.ansible
+        dns_domain_name: active-directory-lab.ansible
         safe_mode_password: "{{ safe_password }}"
         domain_mode: Win2012R2
         domain_netbios_name: ANSIBLE

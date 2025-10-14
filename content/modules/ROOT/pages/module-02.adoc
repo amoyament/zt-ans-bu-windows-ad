@@ -23,7 +23,7 @@ Select the `create_ou_grp.yml` playbook. Edit the playbook for the following tas
       microsoft.ad.group:
         name: "{{ group_name }}"
         scope: global
-        path: OU="{{ org_unit }}",DC=instruqt,DC=ansible
+        path: OU="{{ org_unit }}",DC=active-directory-lab,DC=ansible
         state: present
 
 ----
@@ -38,7 +38,7 @@ git config --global user.email "student@redhat.com"
 git config --global user.name "Student"
 ----
 
-Next lets update the repo:
+Next let's update the repo:
 
 [,text]
 ----
@@ -121,28 +121,28 @@ Group Name = DevOps
 
 Once the template is done, we can verify the changes on our domain controller. Navigate to the `windows` tab. *Start* > *Server Manager*, next select *tools* and *Active Directory Users and Computers*.
 
-image::tools.png[TOOL,link=self,window=_blank]
+image::tools.png[TOOLS,link=self,window=_blank]
 
-If you drop down your instruqt.ansible domain, you should see your Ansible OU and the group inside it.
+If you drop down your active-directory-lab.ansible domain, you should see your Ansible OU and the group inside it.
 
-image::ou.png[OU,link=self,window=_blank]
+image::ou.png[ORG UNIT,link=self,window=_blank]
 
 
 == ☑️ Creating domain users
 
-We have our groups and OU created, we can create some users. Navigate back to you `vscode` and select the playbook `create_user.yml`. This playbook allows you to create users on the domain. However, these tasks add users into different groups, to control this we use `tags`.
+We have our groups and OU created, we can create some users. Navigate back to `vscode` and select the playbook `create_user.yml`. This playbook allows you to create users on the domain. However, these tasks add users into different groups, to control this we use `tags`.
 
 Navigate to `controller` and let us create a template to create admin users. Create the following template with the following details:
 
 [,text]
 ----
-    Name: Create Admin users
-    Inventory: Servers
-    Project: Active-Directory AAP
-    Execution Environement: Windows_ee
-    Playbook: create_user.yml
-    Credentials: Windows Host
-    Job Tags: admin_user
+Name: Create Admin users
+Inventory: Servers
+Project: Active-Directory AAP
+Execution Environement: Windows_ee
+Playbook: create_user.yml
+Credentials: Windows Host
+Job Tags: admin_user
 ----
 
 !!Note: When adding a Job Tag, you need to create the tag before you can allocate it.
@@ -167,7 +167,7 @@ We need to add a survey again, so once this template is saved, navigate to Surve
     Description: Account to be associated to the OU
     Answer variable name: ou_path
     Answer Type: Text
-    Default Answer: CN=Users,DC=instruqt,DC=ansible
+    Default Answer: CN=Users,DC=active-directory-lab,DC=ansible
 ----
 
 Save, and dont forget to enable the Survey!
@@ -195,7 +195,7 @@ Navigate back to *Automation Execution* > *Templates* and launch the `Create Adm
 ----
     Username: zerocool
     Password: P@ssw0rd.123
-    Desired OU: CN=Users,DC=instruqt,DC=ansible
+    Desired OU: CN=Users,DC=active-directory-lab,DC=ansible
 ----
 
 Once succesful, let us navigate to our windows tab and verify the user has been created and is a member of the right groups.
@@ -208,7 +208,7 @@ Navigate back to controller, *Automation Execution* > *Templates* and launch the
 ----
     Username: acidburn
     Password: P@ssw0rd.123
-    Desired OU: OU=Ansible,DC=instruqt,DC=ansible
+    Desired OU: OU=Ansible,DC=active-directory-lab,DC=ansible
 ----
 
 Again, once complete verify on our Windows system.
@@ -219,7 +219,7 @@ image::acid_burn.png[Acid,link=self,window=_blank]
 == ☑️ Creating multiple users
 
 Before moving to the last exercise, lets create a few extra users.
-Navigate to `vscode` and select the playbook `lab_users.yml`. This playbook defines to variables, one for the OU we want to use (OU=Ansible,DC=instruqt,DC=ansible) and the other is the user password which we will generate at random.
+Navigate to `vscode` and select the playbook `lab_users.yml`. This playbook defines to variables, one for the OU we want to use (OU=Ansible,DC=active-directory-lab,DC=ansible) and the other is the user password which we will generate at random.
 
 If you have previously completed the Getting started with Windows automation lab, you would have done a similar exercise to create local accounts. This time we are using the Active Directory modules to create these users.
 

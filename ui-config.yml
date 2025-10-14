@@ -21,7 +21,7 @@ tabs:
     external: false
   - name: Windows
     url: https://windows-ironrdp-${guid}.${domain}/
-    external: true
+    external: false
   - name: VS Code
     url: https://vscode-${guid}.${domain}
     external: false
