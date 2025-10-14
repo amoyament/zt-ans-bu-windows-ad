@@ -15,7 +15,7 @@ tee /tmp/inventory << EOF
 controller.acme.example.com ansible_host=control ansible_user=rhel ansible_connection=local
 
 [windowssrv]
-windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore
+windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore ansible_become=true ansible_become_method=runas ansible_become_user=Administrator ansible_become_password=Ansible123!
 
 [all:vars]
 ansible_user = rhel
@@ -183,6 +183,7 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       become: yes
       become_method: runas
       become_user: Administrator
+      become_password: "{{ ansible_password }}"
       register: slmgr_result
 
     - name: Reboot after Chocolatey/slmgr setup
@@ -214,97 +215,97 @@ echo "=== Running Windows configuration (PowerShell script) ==="
 ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/windows-setup.yml
 
 # (legacy domain.yml kept for reference)
-cat <<EOF | tee /tmp/domain.yml
+# cat <<EOF | tee /tmp/domain.yml
 
----
-- 
-  hosts: windowssrv
-  gather_facts: true
-  collections:
-   - ansible.windows
+# ---
+# - 
+#   hosts: windowssrv
+#   gather_facts: true
+#   collections:
+#    - ansible.windows
 
-  vars:
-    domain_state: domain
-    workgrp_name: WORKGROUP
-    domain_ou: 
-    domain_admin: administrator
-    domain_admin_pass: ''
+#   vars:
+#     domain_state: domain
+#     workgrp_name: WORKGROUP
+#     domain_ou: 
+#     domain_admin: administrator
+#     domain_admin_pass: ''
 
 
-  tasks:
+#   tasks:
 
-    - name: Deploying webservers on Windows nodes
-      block:
-        - name: Add host to the Windows AD
-          microsoft.ad.membership:
-           dns_domain_name: prometheus.io
-           hostname: "{{ ansible_hostname }}"
-           domain_admin_user: administrator@prometheus.io
-           domain_admin_password: ''
-        #  domain_ou_path:  "{{ domain_ou }}" "OU=Windows,OU=Servers,DC=ansible,DC=vagrant"
-           workgroup_name: "{{ workgrp_name }}"
-           state: "{{ domain_state }}"
-           reboot: true
-          tags:
-            - add_domain
-            - never
+#     - name: Deploying webservers on Windows nodes
+#       block:
+#         - name: Add host to the Windows AD
+#           microsoft.ad.membership:
+#            dns_domain_name: prometheus.io
+#            hostname: "{{ ansible_hostname }}"
+#            domain_admin_user: administrator@prometheus.io
+#            domain_admin_password: ''
+#         #  domain_ou_path:  "{{ domain_ou }}" "OU=Windows,OU=Servers,DC=ansible,DC=vagrant"
+#            workgroup_name: "{{ workgrp_name }}"
+#            state: "{{ domain_state }}"
+#            reboot: true
+#           tags:
+#             - add_domain
+#             - never
 
-        - name: Demote Machine to Workgroup
-          microsoft.ad.membership:
-           hostname: "{{ ansible_netbios_name }}"
-           domain_admin_user: administrator@prometheus.io
-           domain_admin_password: ''
-           workgroup_name: "{{ workgrp_name }}"
-           state: workgroup
-          tags:
-            - remove_domain
-            - never
+#         - name: Demote Machine to Workgroup
+#           microsoft.ad.membership:
+#            hostname: "{{ ansible_netbios_name }}"
+#            domain_admin_user: administrator@prometheus.io
+#            domain_admin_password: ''
+#            workgroup_name: "{{ workgrp_name }}"
+#            state: workgroup
+#           tags:
+#             - remove_domain
+#             - never
 
-        - name: Update Windows nodes
-          ansible.windows.win_updates:
-           category_names:
-             - SecurityUpdates
-             - CriticalUpdates
-             - UpdateRollups
-          register: server_updated
-          tags:
-            - always
+#         - name: Update Windows nodes
+#           ansible.windows.win_updates:
+#            category_names:
+#              - SecurityUpdates
+#              - CriticalUpdates
+#              - UpdateRollups
+#           register: server_updated
+#           tags:
+#             - always
 
-    - name: Firewall rule to allow RDP on TCP port 3389
-      win_firewall_rule:
-       name: Remote Desktop
-       localport: 3389
-       action: allow
-       direction: in
-       protocol: tcp
-       profiles: domain,private,public
-       state: present
-       enabled: yes        
-      tags:
-        - add_domain
-        - firewall
-        - never
+#     - name: Firewall rule to allow RDP on TCP port 3389
+#       win_firewall_rule:
+#        name: Remote Desktop
+#        localport: 3389
+#        action: allow
+#        direction: in
+#        protocol: tcp
+#        profiles: domain,private,public
+#        state: present
+#        enabled: yes        
+#       tags:
+#         - add_domain
+#         - firewall
+#         - never
 
-    - name: Firewall rule to allow RDP on TCP port 5986
-      win_firewall_rule:
-        name: WinRM
-        localport: 5986
-        action: allow
-        direction: in
-        protocol: tcp
-        profiles: domain,private,public
-        state: present
-        enabled: yes        
-      tags:
-        - add_domain
-        - firewall
-        - never
+#     - name: Firewall rule to allow RDP on TCP port 5986
+#       win_firewall_rule:
+#         name: WinRM
+#         localport: 5986
+#         action: allow
+#         direction: in
+#         protocol: tcp
+#         profiles: domain,private,public
+#         state: present
+#         enabled: yes        
+#       tags:
+#         - add_domain
+#         - firewall
+#         - never
 
-    - name: Reboot host if install requires it
-      ansible.windows.win_reboot:
-      when: server_updated.reboot_required
+#     - name: Reboot host if install requires it
+#       ansible.windows.win_reboot:
+#       when: server_updated.reboot_required
 
-EOF
+# EOF
 
 # # Execute the setup playbooks
 # echo "=== Running Windows Servers Setup ==="
@@ -320,158 +321,6 @@ cat <<EOF | tee /tmp/controller-setup.yml
   gather_facts: true
     
   tasks:
-#    # Create auth login token
-#     - name: get auth token and restart automation-controller if it fails
-#       block:
-#         - name: Refresh facts
-#           setup:
-
-#         - name: Create oauth token
-#           ansible.controller.token:
-#             description: 'Instruqt lab'
-#             scope: "write"
-#             state: present
-#             controller_host: "https://localhost"
-#             controller_username: "{{ controller_admin_user }}"
-#             controller_password: "{{ controller_admin_password }}"
-#             validate_certs: false
-#           register: _auth_token
-#           until: _auth_token is not failed
-#           delay: 3
-#           retries: 5
-#       rescue:
-#         - name: In rescue block for auth token
-#           debug:
-#             msg: "failed to get auth token. Restarting automation controller service"
-
-#         - name: restart the controller service
-#           ansible.builtin.service:
-#             name: automation-controller
-#             state: restarted
-
-#         - name: Ensure tower/controller is online and working
-#           uri:
-#             url: https://localhost/api/v2/ping/
-#             method: GET
-#             user: "{{ admin_username }}"
-#             password: "{{ admin_password }}"
-#             validate_certs: false
-#             force_basic_auth: true
-#           register: controller_online
-#           until: controller_online is success
-#           delay: 3
-#           retries: 5
-
-#         - name: Retry getting auth token
-#           ansible.controller.token:
-#             description: 'Instruqt lab'
-#             scope: "write"
-#             state: present
-#             controller_host: controller
-#             controller_username: "{{ controller_admin_user }}"
-#             controller_password: "{{ controller_admin_password }}"
-#             validate_certs: false
-#           register: _auth_token
-#           until: _auth_token is not failed
-#           delay: 3
-#           retries: 5
-#       always:
-#         - name: Create fact.d dir
-#           ansible.builtin.file:
-#             path: "{{ custom_facts_dir }}"
-#             state: directory
-#             recurse: yes
-#             owner: "{{ ansible_user }}"
-#             group: "{{ ansible_user }}"
-#             mode: 0755
-#           become: true
-
-#         - name: Create _auth_token custom fact
-#           ansible.builtin.copy:
-#             content: "{{ _auth_token.ansible_facts }}"
-#             dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
-#             owner: "{{ ansible_user }}"
-#             group: "{{ ansible_user }}"
-#             mode: 0644
-#           become: true
-#       check_mode: false
-#       when: ansible_local.custom_facts.controller_token is undefined
-#       tags:
-#         - auth-token
-
-#     - name: refresh facts
-#       setup:
-#         filter:
-#           - ansible_local
-#       tags:
-#         - always
-
-#     - name: create auth token fact
-#       ansible.builtin.set_fact:
-#         auth_token: "{{ ansible_local.custom_facts.controller_token }}"
-#         cacheable: true
-#       check_mode: false
-#       when: auth_token is undefined
-#       tags:
-#         - always
- 
-#     - name: Gather service facts
-#       service_facts:
-
-#     - name: Ensure tower/controller is online and working
-#       uri:
-#         url: https://{{ localhost }}/api/v2/ping/
-#         method: GET
-#         user: "{{ admin_username }}"
-#         password: "{{ admin_password }}"
-#         validate_certs: false
-#         force_basic_auth: true
-#       register: controller_online
-#       until: controller_online is success
-#       delay: 3
-#       retries: 5
-#       when: "'automation-controller' in ansible_facts.services"
-#       tags:
-#         - controller-config
-
-# # Controller objects
-#     - name: Check controller user
-#       uri:
-#         url: https://{{ localhost }}/api/v2/me/
-#         method: GET
-#         user: "{{ controller_admin_user }}"
-#         password: "{{ controller_admin_password }}"
-#         validate_certs: false
-#         force_basic_auth: true
-#       register: me
-#       when: "'automation-controller' in ansible_facts.services"
-#       tags:
-#         - controller-config
-
-#     - name: Debug controller user
-#       ansible.builtin.debug:
-#         var: me
-
-    # - name: Fail if not superuser
-    #   ansible.builtin.fail:
-    #     msg: "Controller user lacks superuser; cannot create org."
-    #   when: not (me.json.is_superuser | default(false))
-    #   tags:
-    #     - controller-config
-
-    # - name: Add Organization
-    #   ansible.controller.organization:
-    #     name: "{{ lab_organization }}"
-    #     description: "ACME Corp Organization"
-    #     state: present
-    #     controller_host: "https://{{ localhost }}"
-    #     controller_username: "{{ controller_admin_user }}"
-    #     controller_password: "{{ controller_admin_password }}"
-    #     validate_certs: false
-    #   tags:
-    #     - controller-config
-    #     - controller-org
-  
     - name: Add Instruqt Windows EE
       ansible.controller.execution_environment:
         name: "{{ controller_ee }}"
@@ -559,7 +408,7 @@ cat <<EOF | tee /tmp/controller-setup.yml
        organization: Default
        inputs:
         username: Administrator
-        password: ansible123!
+        password: Ansible123!
        state: present
        controller_host: "https://localhost"
        controller_username: "{{ controller_admin_user }}"
@@ -605,41 +454,41 @@ password: ansible123!
 verify_ssl = false
 EOF
 
-cat <<EOF | tee /tmp/domain_controller.yml
+# cat <<EOF | tee /tmp/domain_controller.yml
 
----
-- 
-  hosts: windowssrv
-  gather_facts: true
-  collections:
-   - ansible.windows
+# ---
+# - 
+#   hosts: windowssrv
+#   gather_facts: true
+#   collections:
+#    - ansible.windows
 
-  vars:
-    domain_state: domain
-    workgrp_name: WORKGROUP
-    domain_ou: 
-    domain_admin: administrator
-    domain_admin_pass: 'ansible4Ever'
+#   vars:
+#     domain_state: domain
+#     workgrp_name: WORKGROUP
+#     domain_ou: 
+#     domain_admin: administrator
+#     domain_admin_pass: 'ansible4Ever'
 
-  tasks:
+#   tasks:
 
-    - name: Deploying webservers on Windows nodes
-      block:
-        - name: Add host to the Windows AD
-          microsoft.ad.membership:
-           dns_domain_name: prometheus.io
-           hostname: "{{ ansible_hostname }}"
-           domain_admin_user: "{{ domain_admin }}"
-           domain_admin_password: "{{ domain_admin_pass }}"
-           workgroup_name: "{{ workgrp_name }}"
-           state: "{{ domain_state }}"
-           reboot: true
+#     - name: Deploying webservers on Windows nodes
+#       block:
+#         - name: Add host to the Windows AD
+#           microsoft.ad.membership:
+#            dns_domain_name: prometheus.io
+#            hostname: "{{ ansible_hostname }}"
+#            domain_admin_user: "{{ domain_admin }}"
+#            domain_admin_password: "{{ domain_admin_pass }}"
+#            workgroup_name: "{{ workgrp_name }}"
+#            state: "{{ domain_state }}"
+#            reboot: true
 
-    - name: Reboot host if install requires it
-      ansible.windows.win_reboot:
-      when: server_updated.reboot_required
+#     - name: Reboot host if install requires it
+#       ansible.windows.win_reboot:
+#       when: server_updated.reboot_required
 
-EOF
+# EOF
 # # creates a playbook to setup environment
 # tee /tmp/setup.yml << EOF
 # ---
