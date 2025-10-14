@@ -32,7 +32,7 @@ The first task creates an organizational unit in the domain, while the secound c
 
 Before we update our remote repo, we need to configure our git details:
 
-[,sh,role=execute]
+[,text]
 ----
       git config --global user.email "student@redhat.com"
       git config --global user.name "Student"
@@ -40,7 +40,7 @@ Before we update our remote repo, we need to configure our git details:
 
 Next lets update the repo:
 
-[,sh,role=execute]
+[,text]
 ----
     git add *
     git commit -m "Updating the OU Playbook"
@@ -234,7 +234,7 @@ We have defined users as a `dictionary` and we can then loop through those detai
 
 Save the playbook and lets push it to our repo again.
 
-[,sh,role=execute]
+[,text]
 ----
     git add *
     git commit -m "Updating the Lab Users"

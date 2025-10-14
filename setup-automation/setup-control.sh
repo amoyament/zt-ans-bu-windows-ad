@@ -214,6 +214,12 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
         msg: "Reboot to finalize Chocolatey/slmgr setup"
         pre_reboot_delay: 5
 
+    - name: Set MapsBroker to manual and stopped (silence Server Manager)
+      ansible.windows.win_service:
+        name: MapsBroker
+        start_mode: manual
+        state: stopped
+
     - name: Install Microsoft Edge via Chocolatey (with retries)
       ansible.windows.win_shell: choco install microsoft-edge -y --no-progress
       args:

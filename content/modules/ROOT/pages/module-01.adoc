@@ -11,12 +11,12 @@ Our Windows server is currently in a default workgroup state. For this lab we ne
 
 Let us grab the repo:
 
-[,sh,role=execute]
+[,text]
 ----
-git clone http://gitea:3000/student/aap_activedirectory.git
+git clone http://gitea:3000/student/aap_active_directory.git
 ----
 
-Now we nagivate in the explorer on the top left in vscode and you should have your local repo `aap_activedirectory` . Select the playbook ad_promote.yml in your local repo
+Now we nagivate in the explorer on the top left in vscode and you should have your local repo `aap_active_directory` . Select the playbook ad_promote.yml in your local repo
 
 [,yaml]
 ----
@@ -56,9 +56,9 @@ NOTE: Its important to note that we are not showing our credentials in this play
 
 In your terminal window we can view the contents of the vault:
 
-[,sh,role=execute]
+[,text]
 ----
-cd aap_activedirectory/
+cd aap_active_directory/
 ansible-vault view windows_auth
 ----
 
@@ -67,8 +67,8 @@ You will then see the contents of the vault:
 
 ----
 username: Administrator
-user_password: P@ssw0rd.123
-safe_password: P@ssw0rd.123
+user_password: Ansible123!
+safe_password: Ansible123!
 ----
 
 
@@ -107,7 +107,7 @@ Playbook: ad_promote.yml
 Credentials: Windows Host & Windows Vault
 ----
 
-_Its important to note that we are using two credential types for this example.  With the automation controller we can add a number fo credentials  to our templates and in this example we are using the credential for the host machine as well as a credential to unlock the vault._
+NOTE: Its important to note that we are using two credential types for this example.  With the automation controller we can add a number fo credentials  to our templates and in this example we are using the credential for the host machine as well as a credential to unlock the vault._
 
 Save the template and we can launch it!
 
