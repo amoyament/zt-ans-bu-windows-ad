@@ -52,7 +52,7 @@ Now we nagivate in the explorer on the top left in vscode and you should have yo
 
 This playbook uses two certified collections: `ansible.windows` and `microsoft.ad`. In this playbook we reset the local Administrator account password and we then promote the system to a domain controller.
 
-NOTE: Its important to note that we are not showing our credentials in this playbook but we are grabbing them from an ansible-vault which is encrypted. This vault is called windows_auth.
+NOTE: It's important to note that we are not showing our credentials in this playbook but we are grabbing them from an ansible-vault which is encrypted. This vault is called windows_auth.
 
 In your terminal window we can view the contents of the vault:
 
@@ -78,12 +78,13 @@ Now that we have had a look at the playbook and the vault, let us configure this
 
 [,text]
 ----
-Username: student
-Password: learn_ansible
+Username: Admin
+Password: ansible123!
 ----
 
-Navigate to *Credentials*. We will need to create a credential to open our vault.
-Select *Add*, and fill in the following details
+Select the *Automation Execution* dropdown and navigate to *Infrastructure* > *Credentials*. We will need to create a credential to open our vault.
+
+Select *Create credential*, and fill in the following details
 
 [,text]
 ----
@@ -95,7 +96,9 @@ Vault Password: ansible
 Vault Identifier:
 ----
 
-Save and navigate to *Resources* > *Templates*, select *Add* and choose *add Job Template*. Create a template with the following details:
+Save and navigate to *Automation Execution* > *Templates*, select *Create template* and choose *Create job template*. 
+
+Create a template with the following details:
 
 [,text]
 ----
@@ -107,11 +110,11 @@ Playbook: ad_promote.yml
 Credentials: Windows Host & Windows Vault
 ----
 
-NOTE: Its important to note that we are using two credential types for this example.  With the automation controller we can add a number fo credentials  to our templates and in this example we are using the credential for the host machine as well as a credential to unlock the vault._
+NOTE: It's important to note that we are using two credential types for this example. With the automation controller we can add a number of credentials to our templates and in this example we are using the credential for the host machine as well as a credential to unlock the vault.
 
 Save the template and we can launch it!
 
-We are will be waiting for a few minutes as the system reboots.
+We will be waiting for a few minutes as the system reboots...
 
 The system will be promoted and the system will be rebooted. Our `ansible.windows.win_reboot` module allows for the system to reboot and we wait for it to come back up. Congratulations we have a new domain controller.
 
