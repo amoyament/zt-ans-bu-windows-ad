@@ -135,6 +135,20 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
   hosts: windowssrv
   gather_facts: false
   tasks:
+    - name: Ensure WinRM service is running
+      ansible.windows.win_service:
+        name: WinRM
+        state: started
+        start_mode: auto
+
+    - name: Enable PowerShell remoting (idempotent)
+      ansible.windows.win_shell: |
+        try { Enable-PSRemoting -Force -SkipNetworkProfileCheck } catch { }
+      args:
+        executable: powershell.exe
+      changed_when: false
+      failed_when: false
+
     - name: Ensure IIS features are present
       ansible.windows.win_feature:
         name:
@@ -162,6 +176,14 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       ansible.windows.win_copy:
         dest: C:\\Users\\Public\\Desktop\\MyFile.txt
         content: 'Created by Ansible'
+
+    - name: Disable Server Manager auto-start at logon (policy, all users)
+      ansible.windows.win_regedit:
+        path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\Server\ServerManager
+        name: DoNotOpenAtLogon
+        data: 1
+        type: dword
+        state: present
 
     - name: Ensure AD DS feature is present
       ansible.windows.win_feature:
