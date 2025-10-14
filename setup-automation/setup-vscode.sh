@@ -18,26 +18,37 @@ fi
 sudo -u rhel chmod 600 /home/rhel/.ssh/id_rsa*
 
 systemctl stop firewalld
+# Stop any running code-server instances (both legacy and templated units)
+systemctl stop code-server@rhel || true
 systemctl stop code-server || true
 [ -f /home/rhel/.config/code-server/config.yaml ] && \
   mv /home/rhel/.config/code-server/config.yaml /home/rhel/.config/code-server/config.bk.yaml || true
 
 
-# This is the updated configuration block
+# Ensure config directory and ownership
+mkdir -p /home/rhel/.config/code-server
+chown -R rhel:rhel /home/rhel/.config
+
+# Write headers JSON file that code-server can consume via http-headers
+tee /home/rhel/.config/code-server/headers.json << EOF
+{
+  "content-security-policy": "",
+  "x-frame-options": ""
+}
+EOF
+chown rhel:rhel /home/rhel/.config/code-server/headers.json
+
+# code-server configuration
 tee /home/rhel/.config/code-server/config.yaml << EOF
 bind-addr: 0.0.0.0:8080
 auth: none
 cert: false
-# --- Start of new lines ---
-# The following headers relax security to allow embedding in an iframe,
-# which is necessary for clipboard (copy/paste) to work in the Antora lab.
-headers:
-  content-security-policy: ""
-  x-frame-options: ""
-# --- End of new lines ---
+http-headers: /home/rhel/.config/code-server/headers.json
 EOF
+chown rhel:rhel /home/rhel/.config/code-server/config.yaml
 
-systemctl start code-server || true
+# Enable and start the templated unit for user rhel
+systemctl enable --now code-server@rhel || true
 dnf install -y unzip nano git podman ansible-core python3-pip || true
 
 # Ensure ansible-galaxy exists; if not, install ansible-core via pip
