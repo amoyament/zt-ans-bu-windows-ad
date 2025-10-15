@@ -1,8 +1,10 @@
+[#org-management]
 == Organization Management
 
 We have created our controller, and we can now start to create objects, users, and groups on our domain.
 
 
+[#ou-and-groups]
 == ☑️ Organizational Units and Groups
 Active Directory allows us to create organizational units which mirror our functional business groups. In this exercise we are going to create a group for our Ansible users. However, we are also going to create this group under its own OU in Active Directory.
 
@@ -128,6 +130,7 @@ If you drop down your active-directory-lab.ansible domain, you should see your A
 image::ou.png[ORG UNIT,link=self,window=_blank]
 
 
+[#creating-domain-users]
 == ☑️ Creating domain users
 
 We have our groups and OU created, and now we can create some users. Navigate back to `vscode` and select the playbook `create_user.yml`. This playbook allows you to create users on the domain. However, these tasks add users into different groups, to control this we use `tags`.
@@ -216,6 +219,7 @@ Again, once complete, verify on our Windows system.
 image::acid_burn.png[Acid,link=self,window=_blank]
 
 
+[#creating-multiple-users]
 == ☑️ Creating multiple users
 
 Before moving to the last exercise, let's create a few extra users.

@@ -1,17 +1,12 @@
-################################################ UPDATE ME, PLEASE! ################################################
+* xref:module-01.adoc#intro[Introduction]
+** xref:module-01.adoc#promote-windows-server[Promoting a Windows Server]
+** xref:module-01.adoc#create-template[Create the template and execute]
 
-* xref:module-01.adoc[1. Automated Backups]
-** xref:module-01.adoc#backupLinux[Backing up Linux]
-** xref:module-01.adoc#backupWindows[Windows VSS]
-** xref:module-01.adoc#codeSnippets[Code Snippets]
+* xref:module-02.adoc#org-management[Organization Management]
+** xref:module-02.adoc#ou-and-groups[Organizational Units and Groups]
+** xref:module-02.adoc#creating-domain-users[Creating domain users]
+** xref:module-02.adoc#creating-multiple-users[Creating multiple users]
 
-* xref:module-02.adoc[2. Infrastructure Awareness]
-** xref:module-02.adoc#atscale[System Reports]
-** xref:module-02.adoc#compliance[Compliance Reporting]
-** xref:module-02.adoc#codeSnippets[Code Snippets]
-
-* xref:module-03.adoc[3. Windows Reports]
-** xref:module-03.adoc#lastCheck[Check Schedule]
-** xref:module-03.adoc#codeSnippets[Code Snippets]
-
-
+* xref:module-03.adoc#interacting-ad[Interacting with Active Directory]
+** xref:module-03.adoc#powershell-in-ansible[PowerShell in Ansible]
+** xref:module-03.adoc#create-workflow[Create the workflow]

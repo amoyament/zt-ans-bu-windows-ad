@@ -1,3 +1,4 @@
+[#intro]
 == Introduction
 
 Welcome!
@@ -5,6 +6,7 @@ Welcome!
 This lab focuses on using Ansible to automate Active Directory and some of the administration tasks performed on Active Directory. If this is your first Windows automation lab, we would suggest trying the "Getting Started with Windows Automation" lab before trying this one.
 
 
+[#promote-windows-server]
 == ☑️ Promoting a Windows Server
 
 Our Windows server is currently in a default workgroup state. For this lab we need to first promote it to a domain controller. Navigate to your `vscode` tab, we already have a repo configured and we should have a look at the contents. Select *Terminal* and select *New Terminal*. This will open a new terminal at the bottom of your vscode.
@@ -71,6 +73,7 @@ safe_password: Ansible123!
 ----
 
 
+[#create-template]
 == ☑️ Create the template and execute
 
 Now that we have had a look at the playbook and the vault, let us configure this playbook as a template in AAP. Navigate to the AAP tab and login.

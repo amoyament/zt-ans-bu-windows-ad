@@ -1,9 +1,11 @@
+[#interacting-ad]
 == Interacting with Active Directory
 
 
 Apart from creating objects, accounts, and groups or resetting passwords, etc., we can also use Ansible to interact with Active Directory.
 
 
+[#powershell-in-ansible]
 == ☑️ PowerShell in Ansible
 
 Ansible has a number of modules for Windows and for Active Directory; however, we can still utilize PowerShell inside of an Ansible playbook to execute custom tasks or to enrich the automated tasks we are trying to complete.
@@ -65,6 +67,7 @@ Credentials: Windows Host
 Save it and next we do the Workflow!
 
 
+[#create-workflow]
 == ☑️ Create the workflow
 
 Now, we want to grab some data from our Active Directory and create an HTML report. Let us create a workflow template for this and add an approval for the workflow!
