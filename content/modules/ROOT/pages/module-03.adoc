@@ -1,25 +1,45 @@
-//= Module 03 — Just a dash of PowerShell
-
+[#interacting-ad]
 == Interacting with Active Directory
 
-Apart from creating objects and resetting passwords, we can use Ansible to interact with AD and generate reports.
 
-== PowerShell in Ansible
+Apart from creating objects, accounts, and groups or resetting passwords, etc., we can also use Ansible to interact with Active Directory.
 
-Open `user_info.yml` in VS Code. This playbook gathers user info with PowerShell and renders an HTML report from a Jinja template.
 
-Example:
+[#powershell-in-ansible]
+== ☑️ PowerShell in Ansible
+
+Ansible has a number of modules for Windows and for Active Directory; however, we can still utilize PowerShell inside of an Ansible playbook to execute custom tasks or to enrich the automated tasks we are trying to complete.
+
+In this exercise we are going to gather information from Active Directory and use it to create an HTML page. It's important to note that we have a module to do this, but we want to use PowerShell as an example in this instance. Navigate to `vscode` and open the `user_info.yml` playbook. In this playbook we are using the `win_shell` module to execute some PowerShell. We can then use the output with our traditional Ansible modules.
+
+[source,yaml]
 ----
 ---
 - name: Get AD Users and create HTML report
   hosts: windows
   gather_facts: false
   tasks:
+
     - name: Get AD user accounts with groups and lock status
       ansible.windows.win_shell: |
         Import-Module ActiveDirectory
-        Get-ADUser -Filter * -Property DisplayName, EmailAddress, SamAccountName, MemberOf, LockedOut |
-        Select-Object DisplayName, EmailAddress, SamAccountName, @{Name="Groups";Expression={(Get-ADUser -Identity $_.SamAccountName -Property MemberOf | Select-Object -ExpandProperty MemberOf | Get-ADGroup | Select-Object -ExpandProperty Name) -join ", "}}, LockedOut |
+        Get-ADUser -Filter * -Property GivenName, Surname, SamAccountName, MemberOf, LockedOut |
+        Select-Object \
+          GivenName, \
+          Surname, \
+          SamAccountName, \
+          @{ \
+            Name = "Groups"; \
+            Expression = { \
+              ( \
+                Get-ADUser -Identity $_.SamAccountName -Property MemberOf | \
+                Select-Object -ExpandProperty MemberOf | \
+                Get-ADGroup | \
+                Select-Object -ExpandProperty Name \
+              ) -join ", " \
+            } \
+          }, \
+          LockedOut |
         ConvertTo-Json
       register: ad_users
 
@@ -31,33 +51,70 @@ Example:
         users: "{{ ad_users.stdout | from_json }}"
 ----
 
-Create a Job Template in Controller:
-* Name: `User Data Report`
-* Inventory: `Servers`
-* Project: `Active-Directory AAP`
-* Execution Environment: `Windows_ee`
-* Playbook: `user_info.yml`
-* Credentials: `Windows Host`
+The second part of the playbook is to create an HTML page using a Jinja template, which can be found in the template folder of your repo.
 
-== Create the workflow
+Let's create a template for this so long. Create a template back on controller with the following details:
 
-Make a simple workflow with an approval gate, then run the user report.
+----
+Name: User Data Report
+Inventory: Servers
+Project: Active-Directory AAP
+Playbook: user_info.yml
+Execution Environment: Windows_ee
+Credentials: Windows Host
+----
 
-.Workflow Template
-* Name: `AD User Data Report`
-* Inventory: `Servers`
+Save it and next we do the Workflow!
 
-.Add nodes
-* Start → Node Type: Approval
-* Approval Name: “Are you sure you want to access Active Directory account data ?”
-* On success → add template: `User Data Report`
+[#create-workflow]
+== ☑️ Create the workflow
 
-The workflow diagram should reflect an Approval followed by the report template.
+Now, we want to grab some data from our Active Directory and create an HTML report. Let us create a workflow template for this and add an approval for the workflow!
 
-Launch the workflow. Approve when prompted, then watch Jobs. On success, the report is on the Windows host at:
+Navigate to *Automation Execution* > *Templates* and select *Create template*, but this time select *Create workflow job template*. Workflows give us the ability to string automation together and orchestrate different templates. Use the following when creating the workflow:
 
-`C:\\Sites\\ad_report\\user_info.html`
+----
+Name: AD User Data Report
+Inventory: Servers
+----
 
-image::../assets/report.png[Report]
+Save the template!
 
-You should see account details from your Active Directory. Congrats!
+When adding a workflow, we need to choose the action. We are going to start with an approval step; click on *Add step* and select *Approval* as a Node Type.
+
+Use the following for the approval:
+
+----
+Name: Are you sure you want to access Active Directory account data?
+----
+Save the approval step.
+
+We can click the three dots on the approval step and click on *Add step* in our workflow. We need to decide on the condition when this template will be used, so we can use the following for the approval:
+
+----
+Node Type: Job Template
+Job template: User Data Report
+Status: Run on success
+Convergence: Any
+----
+
+Our simple workflow should look like this:
+
+image::diagram.png[DIAGRAM,link=self,window=_blank]
+
+We can now save this workflow template.
+
+We can now navigate to *Automation Execution* > *Templates* and launch our workflow template. You will see we have a notification for an approval:
+
+image::approval.png[APPROVAL,link=self,window=_blank]
+
+We can approve or reject the workflow; select the thumbs up to approve the workflow.
+We can navigate to *Automation Execution* > *Jobs* to see the User Data Report job execute. Once successful we can look at our report on our Windows host.
+
+On the Windows system we can navigate to *C: > Sites > ad_report* and open the `user_info.html` file.
+
+image::report.png[Report,link=self,window=_blank,width=60%]
+
+You should view the accounts from your Active Directory. Congrats!
+
+This concludes this lab.

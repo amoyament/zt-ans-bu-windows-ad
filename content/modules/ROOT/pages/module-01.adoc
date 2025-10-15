@@ -1,23 +1,26 @@
-//= Module 01 — Promoting our machine
+[#intro]
+== Introduction
 
 Welcome!
 
-This lab focuses on using Ansible to automate Active Directory tasks. If this is your first Windows automation lab, consider completing the “Getting Started with Windows Automation” lab first.
+This lab focuses on using Ansible to automate Active Directory and some of the administration tasks performed on Active Directory. If this is your first Windows automation lab, we would suggest trying the "Getting Started with Windows Automation" lab before trying this one.
 
-== Promoting a Windows Server
 
-Our Windows server is currently in a default workgroup state. First, promote it to a domain controller.
+[#promote-windows-server]
+== ☑️ Promoting a Windows Server
 
-.Open VS Code terminal
-* In the `vscode` tab, open menu:Terminal[New Terminal].
+Our Windows server is currently in a default workgroup state. For this lab we need to first promote it to a domain controller. Navigate to your `vscode` tab, we already have a repo configured and we should have a look at the contents. Select *Terminal* and select *New Terminal*. This will open a new terminal at the bottom of your vscode.
 
-.Clone the repository
+Let us grab the repo:
+
+[source,sh]
 ----
-git clone http://gitea:3000/student/aap_activedirectory.git
+git clone http://gitea:3000/student/aap_active_directory.git
 ----
 
-.Open the playbook
-* In the Explorer, open `aap_activedirectory/ad_promote.yml`:
+Now we navigate in the explorer on the top left in vscode and you should have your local repo `aap_active_directory`. Select the playbook ad_promote.yml in your local repo
+
+[source,yaml]
 ----
 ---
 - name: Configure Windows Server as Domain Controller
@@ -35,7 +38,7 @@ git clone http://gitea:3000/student/aap_activedirectory.git
 
     - name: Promote system to a domain Controller
       microsoft.ad.domain:
-        dns_domain_name: instruqt.ansible
+        dns_domain_name: active-directory-lab.ansible
         safe_mode_password: "{{ safe_password }}"
         domain_mode: Win2012R2
         domain_netbios_name: ANSIBLE
@@ -45,55 +48,81 @@ git clone http://gitea:3000/student/aap_activedirectory.git
     - name: Reboot system after promoting to domain Controller
       ansible.windows.win_reboot:
       when: domain_install.reboot_required
+
 ----
 
-This playbook uses two certified collections: `ansible.windows` and `microsoft.ad`. It resets the local Administrator password and promotes the system to a domain controller.
+This playbook uses two certified collections: `ansible.windows` and `microsoft.ad`. In this playbook we reset the local Administrator account password and we then promote the system to a domain controller.
 
-NOTE: Credentials are stored in an encrypted Ansible Vault file `windows_auth`.
+NOTE: It's important to note that we are not showing our credentials in this playbook but we are grabbing them from an ansible-vault which is encrypted. This vault is called windows_auth.
 
-.View the vault
+In your terminal window we can view the contents of the vault:
+
+[source,sh]
 ----
-cd aap_activedirectory/
+cd aap_active_directory/
 ansible-vault view windows_auth
 ----
 
-When prompted, use the vault password: `ansible`. Expected contents:
+When asked to provide the vault password you can enter: *ansible*
+You will then see the contents of the vault:
+
 ----
 username: Administrator
-user_password: P@ssw0rd.123
-safe_password: P@ssw0rd.123
+user_password: Ansible123!
+safe_password: Ansible123!
 ----
 
-== Create the template and execute
 
-.Log in to Controller
-* Username: `student`
-* Password: `learn_ansible`
+[#create-template]
+== ☑️ Create the template and execute
 
-.Create a Vault credential
-* Navigate to menu:Resources[Credentials] → btn:[Add]
-* Fill in:
-** Name: `Windows Vault`
-** Description: Key to open windows authentication vault
-** Organization: `Default`
-** Credential Type: `Vault`
-** Vault Password: `ansible`
+Now that we have had a look at the playbook and the vault, let us configure this playbook as a template in AAP. Navigate to the AAP tab and login.
 
-.Create a Job Template
-* Navigate to menu:Resources[Templates] → btn:[Add] → Add Job Template
-* Use:
-** Name: `Promote Server to Domain Controller`
-** Inventory: `Servers`
-** Project: `Active-Directory AAP`
-** Execution Environment: `Windows_ee`
-** Playbook: `ad_promote.yml`
-** Credentials: `Windows Host`, `Windows Vault`
+----
+Username: Admin
+Password: ansible123!
+----
 
-.Launch the template
-* The system will be promoted and rebooted automatically via `win_reboot`.
+Select the *Automation Execution* dropdown and navigate to *Infrastructure* > *Credentials*. We will need to create a credential to open our vault.
 
-After completion, confirm on the Windows VM (you may need to reconnect):
+Select *Create credential*, and fill in the following details
 
-image::../assets/serverman.png[Server Manager]
+----
+Name: Windows Vault
+Description: Key to open windows authentication vault
+Organization: Default
+Credential Type: Vault
+Vault Password: ansible
+Vault Identifier:
+----
 
-image::../assets/ad.png[Active Directory]
+Save and navigate to *Automation Execution* > *Templates*, select *Create template* and choose *Create job template*. 
+
+Create a template with the following details:
+
+----
+Name: Promote Server to Domain Controller
+Inventory: Servers
+Project: Active-Directory AAP
+Playbook: ad_promote.yml
+Execution Environment: Windows_ee
+Credentials: Windows Host & Windows Vault
+----
+
+NOTE: It's important to note that we are using two credential types for this example. With the automation controller we can add a number of credentials to our templates and in this example we are using the credential for the host machine as well as a credential to unlock the vault.
+
+Save the template and we can launch it!
+
+We will be waiting for a few minutes as the system reboots...
+
+The system will be promoted and the system will be rebooted. Our `ansible.windows.win_reboot` module allows for the system to reboot and we wait for it to come back up. Congratulations we have a new domain controller!
+
+We can confirm this by navigating to the `windows` tab. After a few moments, you will see the system rebooting.
+
+image::reconnect.png[RECONNECT,link=self,window=_blank,width=60%]
+
+Once logged in you can navigate to *Server Manager* and confirm.
+
+image::serverman.png[SERVER MANAGER,link=self,window=_blank,width=60%]
+
+image::ad.png[ACTIVE DIRECTORY,link=self,window=_blank,width=60%]

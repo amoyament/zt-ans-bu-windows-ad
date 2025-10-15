@@ -16,7 +16,7 @@ antora:
       solveButton: false
 
 tabs:
-  - name: aap
+  - name: AAP
     url: https://control-${guid}.${domain}/
     external: false
   - name: Windows
