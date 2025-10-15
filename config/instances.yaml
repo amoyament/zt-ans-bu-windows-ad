@@ -64,8 +64,6 @@ virtualmachines:
     memory: "16G"
     cores: 4
     image_size: "30Gi"
-   # disk_type: "scsi"
-   # bootloader: "efi"
     tags:
       - key: "AnsibleGroup"
         value: "isolated"
@@ -179,14 +177,6 @@ virtualmachines:
     interface_model: "e1000e"
     networks:
       - default
-    # userdata: |-
-    #   #ps1
-    #   $ErrorActionPreference = 'Stop'
-    #   Set-ExecutionPolicy Bypass -Scope Process -Force
-    #   Start-Transcript -Path 'C:\Windows\Temp\userdata-transcript.txt' -Append
-    #   'Userdata OK' | Out-File 'C:\Windows\Temp\userdata-ok.txt' -Encoding UTF8
-    #   'Userdata OK' | Out-File 'C:\userdata-ok.txt' -Encoding UTF8
-    #   Stop-Transcript
     services:
       - name: windows
         ports:
