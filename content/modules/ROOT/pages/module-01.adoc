@@ -11,7 +11,7 @@ Our Windows server is currently in a default workgroup state. For this lab we ne
 
 Let us grab the repo:
 
-[,text]
+[,code]
 ----
 git clone http://gitea:3000/student/aap_active_directory.git
 ----
@@ -55,7 +55,7 @@ NOTE: It's important to note that we are not showing our credentials in this pla
 
 In your terminal window we can view the contents of the vault:
 
-[,text]
+[,code]
 ----
 cd aap_active_directory/
 ansible-vault view windows_auth
@@ -75,7 +75,7 @@ safe_password: Ansible123!
 
 Now that we have had a look at the playbook and the vault, let us configure this playbook as a template in AAP. Navigate to the AAP tab and login.
 
-[,text]
+[,code]
 ----
 Username: Admin
 Password: ansible123!
@@ -85,7 +85,7 @@ Select the *Automation Execution* dropdown and navigate to *Infrastructure* > *C
 
 Select *Create credential*, and fill in the following details
 
-[,text]
+[,code]
 ----
 Name: Windows Vault
 Description: Key to open windows authentication vault
@@ -99,7 +99,7 @@ Save and navigate to *Automation Execution* > *Templates*, select *Create templa
 
 Create a template with the following details:
 
-[,text]
+[,code]
 ----
 Name: Promote Server to Domain Controller
 Inventory: Servers
