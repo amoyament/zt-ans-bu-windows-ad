@@ -117,12 +117,6 @@ python3 -m pip install 'pywinrm[credssp]' requests-credssp requests-ntlm || true
 
 ansible-galaxy collection install ansible.windows microsoft.ad || true
 
-# # Ensure we copy the repo PowerShell to /tmp so Ansible can upload it
-# SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-# if [ -f "$SCRIPT_DIR/windows-setup.ps1" ]; then
-#   cp "$SCRIPT_DIR/windows-setup.ps1" /tmp/windows-setup.ps1
-# fi
-
 cat <<'EOF' | tee /tmp/windows-setup.yml
 ---
 - name: Push and execute windows-setup.ps1 on Windows
@@ -165,11 +159,6 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
               <p>This is the Windows AD domain controller for the lab.</p>
           </body>
           </html>
-
-    - name: Create marker file on Public Desktop
-      ansible.windows.win_copy:
-        dest: C:\\Users\\Public\\Desktop\\MyFile.txt
-        content: 'Created by Ansible'
 
     - name: Disable Server Manager auto-start at logon (policy, all users)
       ansible.windows.win_regedit:

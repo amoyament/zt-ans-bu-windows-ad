@@ -59,8 +59,8 @@ Let's create a template for this so long. Create a template back on controller w
 Name: User Data Report
 Inventory: Servers
 Project: Active-Directory AAP
-Execution Environment: Windows_ee
 Playbook: user_info.yml
+Execution Environment: Windows_ee
 Credentials: Windows Host
 ----
 
@@ -88,8 +88,6 @@ Use the following for the approval:
 Name: Are you sure you want to access Active Directory account data?
 ----
 Save the approval step.
-
-image::approval.png[APPROVAL,link=self,window=_blank]
 
 We can click the three dots on the approval step and click on *Add step* in our workflow. We need to decide on the condition when this template will be used, so we can use the following for the approval:
 
