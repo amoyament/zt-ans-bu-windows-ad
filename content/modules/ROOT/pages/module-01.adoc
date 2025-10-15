@@ -1,8 +1,8 @@
-== Greetings!
+== Introduction
 
 Welcome!
 
-This lab focusses on using Ansible to automation Active directory and some of the administration tasks done on an Active directory. If this is your first Windows automation lab, we would suggest trying the "Getting Started with Windows Automation" lab before trying this one.
+This lab focuses on using Ansible to automate Active Directory and some of the administration tasks performed on Active Directory. If this is your first Windows automation lab, we would suggest trying the "Getting Started with Windows Automation" lab before trying this one.
 
 
 == ☑️ Promoting a Windows Server
@@ -16,7 +16,7 @@ Let us grab the repo:
 git clone http://gitea:3000/student/aap_active_directory.git
 ----
 
-Now we nagivate in the explorer on the top left in vscode and you should have your local repo `aap_active_directory` . Select the playbook ad_promote.yml in your local repo
+Now we navigate in the explorer on the top left in vscode and you should have your local repo `aap_active_directory`. Select the playbook ad_promote.yml in your local repo
 
 [,yaml]
 ----
@@ -105,7 +105,7 @@ Name: Promote Server to Domain Controller
 Inventory: Servers
 Project: Active-Directory AAP
 Playbook: ad_promote.yml
-Execution Environement: Windows_ee
+Execution Environment: Windows_ee
 Credentials: Windows Host & Windows Vault
 ----
 
@@ -121,7 +121,7 @@ We can confirm this by navigating to the `windows` tab. After a few moments, you
 
 image::reconnect.png[RECONNECT,link=self,window=_blank,width=60%]
 
-Once logged in you can naviate to *Server Manager* and confirm.
+Once logged in you can navigate to *Server Manager* and confirm.
 
 image::serverman.png[SERVER MANAGER,link=self,window=_blank,width=60%]
 
