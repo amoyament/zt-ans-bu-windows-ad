@@ -12,7 +12,7 @@ Ansible has a number of modules for Windows and for Active Directory; however, w
 
 In this exercise we are going to gather information from Active Directory and use it to create an HTML page. It's important to note that we have a module to do this, but we want to use PowerShell as an example in this instance. Navigate to `vscode` and open the `user_info.yml` playbook. In this playbook we are using the `win_shell` module to execute some PowerShell. We can then use the output with our traditional Ansible modules.
 
-[,yaml]
+[source,yaml]
 ----
 ---
 - name: Get AD Users and create HTML report
@@ -55,7 +55,6 @@ The second part of the playbook is to create an HTML page using a Jinja template
 
 Let's create a template for this so long. Create a template back on controller with the following details:
 
-[,text]
 ----
 Name: User Data Report
 Inventory: Servers
@@ -64,8 +63,8 @@ Execution Environment: Windows_ee
 Playbook: user_info.yml
 Credentials: Windows Host
 ----
-Save it and next we do the Workflow!
 
+Save it and next we do the Workflow!
 
 [#create-workflow]
 == ☑️ Create the workflow
@@ -74,7 +73,6 @@ Now, we want to grab some data from our Active Directory and create an HTML repo
 
 Navigate to *Automation Execution* > *Templates* and select *Create template*, but this time select *Create workflow job template*. Workflows give us the ability to string automation together and orchestrate different templates. Use the following when creating the workflow:
 
-[,text]
 ----
 Name: AD User Data Report
 Inventory: Servers
@@ -86,7 +84,6 @@ When adding a workflow, we need to choose the action. We are going to start with
 
 Use the following for the approval:
 
-[,text]
 ----
 Name: Are you sure you want to access Active Directory account data?
 ----
@@ -96,7 +93,6 @@ image::approval.png[APPROVAL,link=self,window=_blank]
 
 We can click the three dots on the approval step and click on *Add step* in our workflow. We need to decide on the condition when this template will be used, so we can use the following for the approval:
 
-[,text]
 ----
 Node Type: Job Template
 Job template: User Data Report

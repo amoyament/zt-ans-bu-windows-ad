@@ -12,7 +12,7 @@ Navigate to your `vscode` to start.
 
 Select the `create_ou_grp.yml` playbook. Edit the playbook for the following tasks.
 
-[,yaml]
+[source,yaml]
 ----
   tasks:
     - name: Create Organizational Unit
@@ -34,7 +34,7 @@ The first task creates an organizational unit in the domain, while the second cr
 
 Before we update our remote repo, we need to configure our git details:
 
-[,text]
+[source,sh]
 ----
 git config --global user.email "student@redhat.com"
 git config --global user.name "Student"
@@ -42,7 +42,7 @@ git config --global user.name "Student"
 
 Next let's update the repo:
 
-[,text]
+[source,sh]
 ----
 git add *
 git commit -m "Updating the OU Playbook"
@@ -55,7 +55,6 @@ image::git.png[GIT,link=self,window=_blank]
 
 Use the following credentials:
 
-[,text]
 ----
 Username: student
 Password: learn_ansible
@@ -73,7 +72,6 @@ Next, navigate to *Automation Execution* > *Templates* and select *Create templa
 
 Create a template with the following details:
 
-[,text]
 ----
 Name: Create OU and Groups
 Description: Creating OU and user group based on business units
@@ -91,7 +89,6 @@ image::survey.png[SURVEY,link=self,window=_blank]
 
 Select Survey on the right of the job template details page. Select *Create survey question* and create the following survey question:
 
-[,text]
 ----
 Question: Please define your Organization Unit (OU)
 Description: OU to be created on the domain
@@ -101,7 +98,6 @@ Answer Type: Text
 
 Save this question and add the next:
 
-[,text]
 ----
 Question: Please define your Group for the OU
 Description: Group for the OU to be created on the domain
@@ -115,7 +111,6 @@ image::enable_survey.png[ENABLE SURVEY,link=self,window=_blank]
 
 Navigate back to templates and click on the rocket on our `Create OU and Group` template. The survey will ask you for input. Please provide the following:
 
-[,text]
 ----
 Organizational Unit = Ansible
 Group Name = DevOps
@@ -137,7 +132,6 @@ We have our groups and OU created, and now we can create some users. Navigate ba
 
 Navigate to `AAP` and let us create a template to create admin users. Create the following template with the following details:
 
-[,text]
 ----
 Name: Create Admin users
 Inventory: Servers
@@ -154,7 +148,6 @@ image::admin-tag.png[ADMIN TAG,link=self,window=_blank]
 
 We need to add a survey again, so once this template is saved, navigate to Surveys and let's add the following three questions:
 
-[,text]
 ----
 Question: Please define your user Identity (username)
 Description: Identity (user login name)
@@ -177,7 +170,6 @@ Save, and don't forget to enable all of the surveys!
 
 Next, let's create a job template specifically for the Ansible group we created. Navigate back to *Automation Execution* > *Templates*. Select `copy template` to copy our *Create Admin users* template. Let's edit the copy with the following:
 
-[,text]
 ----
 Name: Create Ansible users
 Inventory: Servers
@@ -194,7 +186,6 @@ Great work so far!
 
 Navigate back to *Automation Execution* > *Templates* and launch the `Create Admin users` template. Provide the following details:
 
-[,text]
 ----
 Username: zerocool
 Password: P@ssw0rd.123
@@ -207,11 +198,10 @@ image::zero.png[ZERO COOL,link=self,window=_blank]
 
 Navigate back to AAP, *Automation Execution* > *Templates* and launch the Create Ansible user template. Provide the following details:
 
-[,text]
 ----
-    Username: acidburn
-    Password: P@ssw0rd.123
-    Desired OU: OU=Ansible,DC=active-directory-lab,DC=ansible
+Username: acidburn
+Password: P@ssw0rd.123
+Desired OU: OU=Ansible,DC=active-directory-lab,DC=ansible
 ----
 
 Again, once complete, verify on our Windows system.
@@ -229,7 +219,7 @@ If you have previously completed the 'Getting started with Windows automation' l
 
 We have defined users as a `dictionary`, and we can then loop through those details to provide Active Directory with more account information. We can finish the playbook by adding a task to create users in a loop.
 
-[,yaml]
+[source,yaml]
 ----
     - name: Create users for lab
       microsoft.ad.user:
@@ -248,7 +238,7 @@ We have defined users as a `dictionary`, and we can then loop through those deta
 
 Save the playbook and let's push it to our repo again.
 
-[,text]
+[source,sh]
 ----
 git add *
 git commit -m "Updating the Lab Users"
@@ -257,7 +247,6 @@ git push
 
 Remember the git username and password:
 
-[,text]
 ----
 Username: student
 Password: learn_ansible
@@ -266,7 +255,6 @@ Password: learn_ansible
 Once we have saved this, we can navigate to `AAP`. We need to synchronize our project. 
 Navigate to *Automation Execution* > *Projects* and resync. Then let's create a new template with the following details:
 
-[,text]
 ----
 Name: Create Ansible Lab users
 Inventory: Servers
