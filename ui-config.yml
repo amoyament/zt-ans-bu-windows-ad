@@ -24,7 +24,7 @@ tabs:
     external: false
   - name: VS Code
     url: https://vscode-${guid}.${domain}
-    external: true
+    external: false
   - name: Gitea
     url: https://gitea-${guid}.${domain}/
     modules:
