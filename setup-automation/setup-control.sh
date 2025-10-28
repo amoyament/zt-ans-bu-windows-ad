@@ -183,11 +183,12 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       args:
         executable: powershell.exe
 
-    - name: Execute slmgr /rearm as SYSTEM
+- name: Execute slmgr /rearm as SYSTEM
       ansible.windows.win_command: >
         cscript.exe //B //NoLogo %windir%\system32\slmgr.vbs /rearm
       become: yes
-      become_method: machine  
+      become_method: powershell
+      become_user: System
       register: rearm_result
 
     - name: Reboot after Chocolatey/slmgr setup
