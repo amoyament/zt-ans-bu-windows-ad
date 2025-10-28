@@ -186,6 +186,7 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       ansible.windows.win_powershell:
         script: slmgr /rearm
       become: yes
+      become_user: Administrator
       become_method: runas
       register: rearm_result
 
