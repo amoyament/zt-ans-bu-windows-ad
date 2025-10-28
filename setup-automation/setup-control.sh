@@ -188,6 +188,7 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
         script: slmgr /rearm
       become: yes
       become_method: runas
+      become_user: Administrator
       register: rearm_result
 
     - name: Reboot after Chocolatey/slmgr setup
