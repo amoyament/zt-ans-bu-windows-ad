@@ -182,16 +182,12 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       args:
         executable: powershell.exe
 
-    - name: Rearm Windows license
-      ansible.windows.win_slmgr:
-        rearm: yes
-      register: slmgr_result
-      # This module will fail automatically if rearm isn't possible,
-      # so you don't need 'failed_when'.
-
-    - name: Debug slmgr output
-      ansible.builtin.debug:
-        var: slmgr_result
+    - name: Execute slmgr /rearm with elevated privileges
+      ansible.windows.win_powershell:
+        script: slmgr /rearm
+      become: yes
+      become_method: runas
+      register: rearm_result
 
     - name: Reboot after Chocolatey/slmgr setup
       ansible.windows.win_reboot:
