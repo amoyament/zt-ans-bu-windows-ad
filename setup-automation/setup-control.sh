@@ -40,7 +40,7 @@ custom_facts_dir: "/etc/ansible/facts.d"
 custom_facts_file: custom_facts.fact
 admin_username: admin
 admin_password: Ansible123!
-ansible_become_password: Ansible123!
+ansible_become_pass: Ansible123!
 repo_user: rhel
 default_tag_name: "0.0.1"
 lab_organization: ACME
@@ -183,12 +183,11 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       args:
         executable: powershell.exe
 
-    - name: Execute slmgr /rearm as SYSTEM
-      ansible.windows.win_command: >
-        cscript.exe //B //NoLogo %windir%\system32\slmgr.vbs /rearm
+    - name: Execute slmgr /rearm with elevated privileges
+      ansible.windows.win_powershell:
+        script: slmgr /rearm
       become: yes
-      become_method: powershell
-      become_user: System
+      become_method: runas
       register: rearm_result
 
     - name: Reboot after Chocolatey/slmgr setup
