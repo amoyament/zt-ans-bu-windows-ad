@@ -12,8 +12,8 @@ echo "192.168.1.10 control.lab control controller" >> /etc/hosts
 tee /tmp/inventory << EOF
 
 [windowssrv]
-windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore
-# windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore ansible_become=true ansible_become_method=runas ansible_become_user=Administrator ansible_become_password=Ansible123!
+# windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore
+windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore ansible_become=true ansible_become_method=runas ansible_become_user=Administrator ansible_become_password=Ansible123!
 
 [all:vars]
 ansible_user = rhel
