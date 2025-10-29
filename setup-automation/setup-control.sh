@@ -183,13 +183,36 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       args:
         executable: powershell.exe
 
-    - name: Execute slmgr /rearm with elevated privileges
-      ansible.windows.win_powershell:
-        script: slmgr /rearm
+    - name: Create one-time task to run slmgr
+      ansible.windows.win_scheduled_task:
+        name: "Run SLMGR Once"
+        description: "Bypass UAC for slmgr /rearm"
+        actions:
+          - path: 'cscript.exe'
+            arguments: '//B //NoLogo %windir%\system32\slmgr.vbs /rearm'
+        triggers:
+          - type: registration  # Makes it runnable on demand
+        principal:
+          user_id: 'Administrator'
+          run_level: highest      # <-- This is the magic part
+        state: present
+      # We still need 'runas' to *create* the elevated task
       become: yes
       become_method: runas
       become_user: Administrator
+
+    - name: Run the slmgr task immediately
+      ansible.windows.win_command:
+        cmd: 'schtasks.exe /Run /TN "Run SLMGR Once"'
       register: rearm_result
+
+    - name: Remove the one-time slmgr task
+      ansible.windows.win_scheduled_task:
+        name: "Run SLMGR Once"
+        state: absent
+      become: yes
+      become_method: runas
+      become_user: Administrator
 
     - name: Reboot after Chocolatey/slmgr setup
       ansible.windows.win_reboot:
