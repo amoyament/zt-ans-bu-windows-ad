@@ -206,17 +206,6 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       become_user: Administrator
       register: rearm_result
 
-    # ******************** TEST ********************
-    - name: Check license status after rearm
-      ansible.windows.win_shell: cscript.exe //NoLogo $env:windir\system32\slmgr.vbs /dli
-      register: license_status
-      changed_when: false  # This command only reads data
-
-    - name: Display license status
-      ansible.builtin.debug:
-        var: license_status.stdout_lines
-    # *********************************************************
-
     - name: Reboot after Chocolatey/slmgr setup
       ansible.windows.win_reboot:
         msg: "Reboot to finalize Chocolatey/slmgr setup"
