@@ -183,36 +183,37 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       args:
         executable: powershell.exe
 
-    - name: Create one-time task to run slmgr
-      ansible.windows.win_scheduled_task:
-        name: "Run SLMGR Once"
-        description: "Bypass UAC for slmgr /rearm"
-        actions:
-          - path: 'cscript.exe'
-            arguments: '//B //NoLogo %windir%\system32\slmgr.vbs /rearm'
-        triggers:
-          - type: registration  # Makes it runnable on demand
-        principal:
-          user_id: 'Administrator'
-          run_level: highest      # <-- This is the magic part
-        state: present
-      # We still need 'runas' to *create* the elevated task
+    - name: Execute slmgr /rearm via UAC-Bypassing Scheduled Task
+      ansible.windows.win_powershell:
+        script: |
+          # 1. Define the action to run
+          $Action = New-ScheduledTaskAction -Execute "cscript.exe" -Argument "//B //NoLogo %windir%\system32\slmgr.vbs /rearm"
+          
+          # 2. Define the principal (run as Admin with highest privileges)
+          $Principal = New-ScheduledTaskPrincipal -UserId "Administrator" -RunLevel Highest
+          
+          # 3. Create the task (or update if exists)
+          $TaskName = "TempSLMGRRearm"
+          Register-ScheduledTask -TaskName $TaskName -Action $Action -Principal $Principal -Force | Out-Null
+          
+          # 4. Run the task
+          Start-ScheduledTask -TaskName $TaskName
+          
+          # 5. Wait for it to finish (so Ansible waits)
+          $TaskState = (Get-ScheduledTask -TaskName $TaskName).State
+          while ($TaskState -eq "Running") {
+            Start-Sleep -Seconds 1
+            $TaskState = (Get-ScheduledTask -TaskName $TaskName).State
+          }
+          
+          # 6. Clean up the task
+          Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
+        
+      # We STILL need 'runas' to get permission to create the task
       become: yes
       become_method: runas
       become_user: Administrator
-
-    - name: Run the slmgr task immediately
-      ansible.windows.win_command:
-        cmd: 'schtasks.exe /Run /TN "Run SLMGR Once"'
       register: rearm_result
-
-    - name: Remove the one-time slmgr task
-      ansible.windows.win_scheduled_task:
-        name: "Run SLMGR Once"
-        state: absent
-      become: yes
-      become_method: runas
-      become_user: Administrator
 
     - name: Reboot after Chocolatey/slmgr setup
       ansible.windows.win_reboot:
