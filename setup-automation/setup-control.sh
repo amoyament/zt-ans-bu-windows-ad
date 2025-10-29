@@ -238,7 +238,7 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
 EOF
 
 echo "=== Running Windows set up ==="
-ANSIBLE_COLLECTIONS_PATH=/root/.ansible/collections/ansible_collections/:/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/windows-setup.yml -vv
+ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/windows-setup.yml
 
 ############################ CONTROLLER CONFIG
 
