@@ -13,7 +13,6 @@ tee /tmp/inventory << EOF
 
 [windowssrv]
 windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore
-# windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore ansible_become=true ansible_become_method=runas ansible_become_user=Administrator ansible_become_password=Ansible123!
 
 [all:vars]
 ansible_user = rhel
@@ -40,6 +39,7 @@ custom_facts_dir: "/etc/ansible/facts.d"
 custom_facts_file: custom_facts.fact
 admin_username: admin
 admin_password: Ansible123!
+ansible_become_pass: Ansible123!
 repo_user: rhel
 default_tag_name: "0.0.1"
 lab_organization: ACME
@@ -182,15 +182,29 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       args:
         executable: powershell.exe
 
-    - name: Execute slmgr /rearm (non-interactive)
-      ansible.windows.win_command: >
-        cscript.exe //B //NoLogo %windir%\system32\slmgr.vbs /rearm
+    - name: Execute slmgr /rearm
+      ansible.windows.win_powershell:
+        script: |
+          $Action = New-ScheduledTaskAction -Execute "cscript.exe" -Argument "//B //NoLogo %windir%\system32\slmgr.vbs /rearm"
+
+          $Principal = New-ScheduledTaskPrincipal -UserId "Administrator" -RunLevel Highest
+
+          $TaskName = "TempSLMGRRearm"
+          Register-ScheduledTask -TaskName $TaskName -Action $Action -Principal $Principal -Force | Out-Null
+
+          Start-ScheduledTask -TaskName $TaskName
+
+          $TaskState = (Get-ScheduledTask -TaskName $TaskName).State
+          while ($TaskState -eq "Running") {
+            Start-Sleep -Seconds 1
+            $TaskState = (Get-ScheduledTask -TaskName $TaskName).State
+          }
+
+          Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
       become: yes
       become_method: runas
       become_user: Administrator
-      register: slmgr_result
-      changed_when: false
-      failed_when: false
+      register: rearm_result
 
     - name: Reboot after Chocolatey/slmgr setup
       ansible.windows.win_reboot:
@@ -224,7 +238,7 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
 EOF
 
 echo "=== Running Windows set up ==="
-ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/windows-setup.yml -vv
+ANSIBLE_COLLECTIONS_PATH=/tmp/ansible-automation-platform-containerized-setup-bundle-2.5-9-x86_64/collections/:/root/.ansible/collections/ansible_collections/ ansible-playbook -e @/tmp/track-vars.yml -i /tmp/inventory /tmp/windows-setup.yml
 
 ############################ CONTROLLER CONFIG
 
