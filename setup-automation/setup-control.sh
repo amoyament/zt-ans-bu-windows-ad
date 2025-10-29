@@ -208,7 +208,7 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
 
     # ******************** TEST ********************
     - name: Check license status after rearm
-      ansible.windows.win_shell: cscript.exe //NoLogo %windir%\system32\slmgr.vbs /dli
+      ansible.windows.win_shell: cscript.exe //NoLogo $env:windir\system32\slmgr.vbs /dli
       register: license_status
       changed_when: false  # This command only reads data
 
