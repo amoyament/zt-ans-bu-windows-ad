@@ -182,7 +182,7 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
       args:
         executable: powershell.exe
 
-    - name: Execute slmgr /rearm via UAC-Bypassing Scheduled Task
+    - name: Execute slmgr /rearm
       ansible.windows.win_powershell:
         script: |
           $Action = New-ScheduledTaskAction -Execute "cscript.exe" -Argument "//B //NoLogo %windir%\system32\slmgr.vbs /rearm"
