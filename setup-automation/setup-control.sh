@@ -13,7 +13,6 @@ tee /tmp/inventory << EOF
 
 [windowssrv]
 windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore
-# windows ansible_host=windows ansible_user=Administrator ansible_password=Ansible123! ansible_connection=winrm ansible_port=5986 ansible_winrm_scheme=https ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore ansible_become=true ansible_become_method=runas ansible_become_user=Administrator ansible_become_password=Ansible123!
 
 [all:vars]
 ansible_user = rhel
@@ -186,34 +185,37 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
     - name: Execute slmgr /rearm via UAC-Bypassing Scheduled Task
       ansible.windows.win_powershell:
         script: |
-          # 1. Define the action to run
           $Action = New-ScheduledTaskAction -Execute "cscript.exe" -Argument "//B //NoLogo %windir%\system32\slmgr.vbs /rearm"
-          
-          # 2. Define the principal (run as Admin with highest privileges)
+
           $Principal = New-ScheduledTaskPrincipal -UserId "Administrator" -RunLevel Highest
-          
-          # 3. Create the task (or update if exists)
+
           $TaskName = "TempSLMGRRearm"
           Register-ScheduledTask -TaskName $TaskName -Action $Action -Principal $Principal -Force | Out-Null
-          
-          # 4. Run the task
+
           Start-ScheduledTask -TaskName $TaskName
-          
-          # 5. Wait for it to finish (so Ansible waits)
+
           $TaskState = (Get-ScheduledTask -TaskName $TaskName).State
           while ($TaskState -eq "Running") {
             Start-Sleep -Seconds 1
             $TaskState = (Get-ScheduledTask -TaskName $TaskName).State
           }
-          
-          # 6. Clean up the task
+
           Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
-        
-      # We STILL need 'runas' to get permission to create the task
       become: yes
       become_method: runas
       become_user: Administrator
       register: rearm_result
+
+    # ******************** TEST ********************
+    - name: Check license status after rearm
+      ansible.windows.win_shell: cscript.exe //NoLogo %windir%\system32\slmgr.vbs /dli
+      register: license_status
+      changed_when: false  # This command only reads data
+
+    - name: Display license status
+      ansible.builtin.debug:
+        var: license_status.stdout_lines
+    # *********************************************************
 
     - name: Reboot after Chocolatey/slmgr setup
       ansible.windows.win_reboot:
