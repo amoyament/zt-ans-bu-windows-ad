@@ -124,19 +124,19 @@ cat <<'EOF' | tee /tmp/windows-setup.yml
   hosts: windowssrv
   gather_facts: false
   tasks:
-    # - name: Ensure WinRM service is running
-    #   ansible.windows.win_service:
-    #     name: WinRM
-    #     state: started
-    #     start_mode: auto
+    - name: Ensure WinRM service is running
+      ansible.windows.win_service:
+        name: WinRM
+        state: started
+        start_mode: auto
 
-    # - name: Enable PowerShell remoting (idempotent)
-    #   ansible.windows.win_shell: |
-    #     try { Enable-PSRemoting -Force -SkipNetworkProfileCheck } catch { }
-    #   args:
-    #     executable: powershell.exe
-    #   changed_when: false
-    #   failed_when: false
+    - name: Enable PowerShell remoting (idempotent)
+      ansible.windows.win_shell: |
+        try { Enable-PSRemoting -Force -SkipNetworkProfileCheck } catch { }
+      args:
+        executable: powershell.exe
+      changed_when: false
+      failed_when: false
 
     - name: Ensure IIS features are present
       ansible.windows.win_feature:
