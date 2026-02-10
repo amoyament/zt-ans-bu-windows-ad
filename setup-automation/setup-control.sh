@@ -1,5 +1,18 @@
-################################################ UPDATE ME, PLEASE! ################################################
 #!/bin/bash
+
+retry "subscription-manager clean"
+retry "curl -k -L https://${SATELLITE_URL}/pub/katello-server-ca.crt -o /etc/pki/ca-trust/source/anchors/${SATELLITE_URL}.ca.crt"
+retry "update-ca-trust"
+KATELLO_INSTALLED=$(rpm -qa | grep -c katello)
+if [ $KATELLO_INSTALLED -eq 0 ]; then
+  retry "rpm -Uhv https://${SATELLITE_URL}/pub/katello-ca-consumer-latest.noarch.rpm"
+fi
+subscription-manager status
+if [ $? -ne 0 ]; then
+    retry "subscription-manager register --org=${SATELLITE_ORG} --activationkey=${SATELLITE_ACTIVATIONKEY}"
+fi
+retry "dnf install -y python3-pip python3-libsemanage"
+
 if [ ! -f /home/rhel/.ssh/id_rsa ]; then
   su rhel -c 'ssh-keygen -f /home/rhel/.ssh/id_rsa -q -N ""'
 fi
